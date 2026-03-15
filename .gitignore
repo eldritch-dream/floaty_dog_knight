@@ -1,0 +1,21 @@
+# Godot 4.x
+.godot/
+*.translation
+
+# Exported builds
+export/
+build/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+*.swp
+*.swo
+*~
+
+# GUT
+.gut_editor_config.json
