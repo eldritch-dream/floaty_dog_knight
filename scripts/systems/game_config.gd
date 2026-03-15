@@ -23,6 +23,8 @@ extends Resource
 @export var float_drag: float = 0.93
 ## Number of extra air jumps allowed (1 = double jump, 2 = triple, etc.).
 @export var max_air_jumps: int = 1
+## Upward velocity for air jumps (weaker than ground jump, upgradeable).
+@export var air_jump_velocity: float = 10.0
 
 # ── Dash ─────────────────────────────────────────────────────────────
 @export_group("Dash")

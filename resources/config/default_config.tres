@@ -11,6 +11,7 @@ fall_multiplier = 2.3
 air_friction = 0.98
 float_drag = 0.93
 max_air_jumps = 1
+air_jump_velocity = 10.0
 dash_speed = 25.0
 dash_duration = 0.2
 dash_cooldown = 0.8

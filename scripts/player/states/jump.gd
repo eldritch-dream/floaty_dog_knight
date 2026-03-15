@@ -3,8 +3,12 @@ extends PlayerState
 
 
 func enter() -> void:
-	player.velocity.y = config.jump_velocity
-	player.coyote_timer = 0.0  # Used coyote time.
+	# Use weaker air jump velocity if this is a mid-air jump.
+	if player.is_on_floor():
+		player.velocity.y = config.jump_velocity
+	else:
+		player.velocity.y = config.air_jump_velocity
+	player.coyote_timer = 0.0
 	player.jump_buffered = false
 
 
@@ -36,7 +40,7 @@ func physics_update(delta: float) -> void:
 	# Air jump (double jump).
 	if Input.is_action_just_pressed("jump") and player.air_jumps_remaining > 0:
 		player.air_jumps_remaining -= 1
-		player.velocity.y = config.jump_velocity
+		player.velocity.y = config.air_jump_velocity
 		# Stay in Jump state with fresh upward velocity.
 		return
 
