@@ -21,6 +21,8 @@ extends Resource
 @export var air_friction: float = 0.98
 ## Drag applied during the float state to slow descent. Lower = floatier.
 @export var float_drag: float = 0.93
+## Number of extra air jumps allowed (1 = double jump, 2 = triple, etc.).
+@export var max_air_jumps: int = 1
 
 # ── Dash ─────────────────────────────────────────────────────────────
 @export_group("Dash")

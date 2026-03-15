@@ -26,6 +26,13 @@ func physics_update(delta: float) -> void:
 
 	# Buffer jump press for when we land.
 	if Input.is_action_just_pressed("jump") and player.coyote_timer <= 0.0:
+		# Air jump if available.
+		if player.air_jumps_remaining > 0:
+			player.air_jumps_remaining -= 1
+			player.jump_buffered = false
+			player.state_machine.transition_to("jump")
+			return
+		# Otherwise buffer it for landing.
 		player.jump_buffered = true
 		player.jump_buffer_timer = config.jump_buffer_time
 

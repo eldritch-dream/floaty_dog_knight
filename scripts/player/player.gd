@@ -21,6 +21,8 @@ var coyote_timer: float = 0.0
 var jump_buffered: bool = false
 ## Time remaining for the jump buffer to stay valid.
 var jump_buffer_timer: float = 0.0
+## Air jumps remaining (reset on landing).
+var air_jumps_remaining: int = 0
 
 
 func _ready() -> void:
@@ -62,6 +64,10 @@ func _physics_process(delta: float) -> void:
 		if dash_cooldown_timer <= 0.0:
 			can_dash = true
 			dash_cooldown_timer = 0.0
+
+	# Reset air jumps when grounded.
+	if is_on_floor():
+		air_jumps_remaining = config.max_air_jumps if config else 1
 
 	# Jump buffer countdown.
 	if jump_buffered:

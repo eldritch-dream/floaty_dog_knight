@@ -33,6 +33,13 @@ func physics_update(delta: float) -> void:
 		player.velocity.x *= config.air_friction
 		player.velocity.z *= config.air_friction
 
+	# Air jump (double jump).
+	if Input.is_action_just_pressed("jump") and player.air_jumps_remaining > 0:
+		player.air_jumps_remaining -= 1
+		player.velocity.y = config.jump_velocity
+		# Stay in Jump state with fresh upward velocity.
+		return
+
 	# Dash in air.
 	if Input.is_action_just_pressed("dash") and player.can_dash:
 		player.state_machine.transition_to("dash")
