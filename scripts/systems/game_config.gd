@@ -12,15 +12,15 @@ extends Resource
 # ── Jump & Gravity ───────────────────────────────────────────────────
 @export_group("Jump & Gravity")
 ## Initial upward velocity when jumping.
-@export var jump_velocity: float = 12.0
+@export var jump_velocity: float = 14.5
 ## Multiplier applied to project gravity. Higher = heavier feel.
-@export var gravity_scale: float = 1.2
+@export var gravity_scale: float = 1.4
 ## Extra gravity multiplier when falling (velocity.y < 0).
-@export var fall_multiplier: float = 2.0
+@export var fall_multiplier: float = 2.3
 ## Per-frame velocity retention while airborne (0-1). 1 = no friction.
 @export var air_friction: float = 0.98
 ## Drag applied during the float state to slow descent. Lower = floatier.
-@export var float_drag: float = 0.88
+@export var float_drag: float = 0.93
 
 # ── Dash ─────────────────────────────────────────────────────────────
 @export_group("Dash")
