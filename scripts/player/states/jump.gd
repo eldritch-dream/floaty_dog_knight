@@ -1,13 +1,16 @@
 extends PlayerState
 ## Jump — launched upward, transitions to Float when falling.
 
+var _is_air_jump: bool = false
+
 
 func enter() -> void:
 	# Use weaker air jump velocity if this is a mid-air jump.
-	if player.is_on_floor():
-		player.velocity.y = config.jump_velocity
-	else:
+	_is_air_jump = not player.is_on_floor()
+	if _is_air_jump:
 		player.velocity.y = config.air_jump_velocity
+	else:
+		player.velocity.y = config.jump_velocity
 	player.coyote_timer = 0.0
 	player.jump_buffered = false
 
@@ -15,6 +18,9 @@ func enter() -> void:
 func physics_update(delta: float) -> void:
 	var base_gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity", 9.8)
 	var gravity: float = base_gravity * config.gravity_scale
+	# Pull air jumps down faster so they feel snappier.
+	if _is_air_jump:
+		gravity *= 1.5
 	player.velocity.y -= gravity * delta
 
 	# Air control — camera-relative.
