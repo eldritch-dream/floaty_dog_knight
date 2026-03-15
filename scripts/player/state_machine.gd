@@ -55,7 +55,7 @@ func transition_to(target_state_name: String) -> void:
 	if new_state == current_state:
 		return
 
-	var old_name := current_state.name if current_state else ""
+	var old_name: String = current_state.name if current_state else ""
 	if current_state:
 		current_state.exit()
 	current_state = new_state

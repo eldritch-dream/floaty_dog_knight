@@ -9,8 +9,8 @@ func enter() -> void:
 
 func physics_update(delta: float) -> void:
 	# Enhanced gravity when falling (fall_multiplier).
-	var gravity := ProjectSettings.get_setting("physics/3d/default_gravity", 9.8)
-	gravity *= config.gravity_scale * config.fall_multiplier
+	var base_gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity", 9.8)
+	var gravity: float = base_gravity * config.gravity_scale * config.fall_multiplier
 	player.velocity.y -= gravity * delta
 
 	# Float drag slows the descent for that floaty feel.
@@ -30,16 +30,16 @@ func physics_update(delta: float) -> void:
 		player.jump_buffer_timer = config.jump_buffer_time
 
 	# Air control — camera-relative, high responsiveness.
-	var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
+	var input_dir: Vector2 = Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 	if input_dir.length() > 0.1:
-		var cam_basis := player.camera_rig.global_transform.basis
-		var forward := (-cam_basis.z)
+		var cam_basis: Basis = player.camera_rig.global_transform.basis
+		var forward: Vector3 = -cam_basis.z
 		forward.y = 0.0
 		forward = forward.normalized()
-		var right := cam_basis.x
+		var right: Vector3 = cam_basis.x
 		right.y = 0.0
 		right = right.normalized()
-		var direction := (forward * -input_dir.y + right * input_dir.x).normalized()
+		var direction: Vector3 = (forward * -input_dir.y + right * input_dir.x).normalized()
 		player.velocity.x = lerp(player.velocity.x, direction.x * config.move_speed, 0.15)
 		player.velocity.z = lerp(player.velocity.z, direction.z * config.move_speed, 0.15)
 	else:

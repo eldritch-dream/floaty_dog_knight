@@ -14,13 +14,13 @@ func enter() -> void:
 	player.dash_cooldown_timer = config.dash_cooldown
 
 	# Dash in the direction the player is facing, or input direction if available.
-	var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
+	var input_dir: Vector2 = Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 	if input_dir.length() > 0.1:
-		var cam_basis := player.camera_rig.global_transform.basis
-		var forward := (-cam_basis.z)
+		var cam_basis: Basis = player.camera_rig.global_transform.basis
+		var forward: Vector3 = -cam_basis.z
 		forward.y = 0.0
 		forward = forward.normalized()
-		var right := cam_basis.x
+		var right: Vector3 = cam_basis.x
 		right.y = 0.0
 		right = right.normalized()
 		_dash_direction = (forward * -input_dir.y + right * input_dir.x).normalized()
@@ -37,7 +37,7 @@ func physics_update(delta: float) -> void:
 	if _dash_timer <= 0.0:
 		# Dash finished — choose next state.
 		if player.is_on_floor():
-			var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
+			var input_dir: Vector2 = Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 			if input_dir.length() > 0.1:
 				player.state_machine.transition_to("run")
 			else:
