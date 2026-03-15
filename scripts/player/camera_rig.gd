@@ -1,19 +1,34 @@
 class_name CameraRig
 extends Node3D
 ## Over-the-shoulder camera rig. Handles mouse + stick input for orbiting.
-## Child of the player — follows automatically. Contains SpringArm3D + Camera3D.
+## Uses top_level = true so it does NOT inherit the player's Y rotation.
+## Manually follows the player's position each frame.
 
 var config: GameConfig
 
 ## Internal pitch tracker (radians).
 var _pitch: float = 0.0
 
+## Reference to the player we're following.
+var _target: Node3D
+
 
 func setup(game_config: GameConfig, spring_arm: SpringArm3D) -> void:
 	config = game_config
+	_target = get_parent()
+	# Detach from player's transform so player rotation doesn't spin us.
+	top_level = true
+	# Initialize position to player's position.
+	global_position = _target.global_position
 	spring_arm.spring_length = config.camera_distance
 	# Offset the spring arm upward for over-the-shoulder feel.
 	spring_arm.position.y = config.camera_height
+
+
+func _physics_process(_delta: float) -> void:
+	# Follow the player's position without inheriting rotation.
+	if _target:
+		global_position = _target.global_position
 
 
 func handle_mouse_input(event: InputEventMouseMotion) -> void:
