@@ -50,11 +50,6 @@ jobs:
           mkdir -p builds/windows
           godot --headless --export-release "Windows Desktop" builds/windows/DoggoKnight.exe 2>&1
 
-      - name: Export Linux build
-        run: |
-          mkdir -p builds/linux
-          godot --headless --export-release "Linux/X11" builds/linux/DoggoKnight.x86_64 2>&1
-
       # Web export for itch.io browser play.
       # The "Web" preset in export_presets.cfg must target res://builds/web/index.html.
       # Godot 4 web exports require SharedArrayBuffer — enable it in your itch.io
@@ -88,7 +83,6 @@ jobs:
           prerelease: false
           files: |
             builds/windows/DoggoKnight.exe
-            builds/linux/DoggoKnight.x86_64
             builds/DoggoKnight-web.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
