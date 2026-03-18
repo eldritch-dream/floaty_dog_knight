@@ -1,0 +1,125 @@
+#!/usr/bin/env bash
+# Doggo Knight pre-commit hook.
+# Install with: bash scripts/install_hooks.sh
+#
+# Checks (in order):
+#   1. gdlint on all staged .gd files           (fast, always runs if gdlint found)
+#   2. Warn if @export var removed from GameConfig (fast, always runs)
+#   3. GUT unit test suite                       (slow — requires Godot on PATH
+#                                                  or GODOT_EXE env var)
+#      Skip entirely with:  SKIP_GUT=1 git commit ...
+#      Enable explicitly:   SKIP_GUT=0 git commit ... (default when Godot found)
+
+set -euo pipefail
+
+PASS=0
+FAIL=1
+
+# ── Helpers ──────────────────────────────────────────────────────────────────
+
+ok()   { echo "  [ok]  $*"; }
+warn() { echo "  [warn] $*" >&2; }
+fail() { echo "  [FAIL] $*" >&2; }
+header() { echo ""; echo "── pre-commit: $* ──"; }
+
+# ── 1. gdlint ────────────────────────────────────────────────────────────────
+
+header "gdlint"
+
+STAGED_GD=$(git diff --cached --name-only --diff-filter=ACM | grep '\.gd$' || true)
+
+if [[ -z "$STAGED_GD" ]]; then
+    ok "No staged .gd files."
+elif ! command -v gdlint &>/dev/null; then
+    warn "gdlint not found — skipping. Install with: pip install gdtoolkit"
+else
+    LINT_ERRORS=0
+    while IFS= read -r file; do
+        if [[ -f "$file" ]]; then
+            if ! gdlint "$file" 2>&1; then
+                LINT_ERRORS=$((LINT_ERRORS + 1))
+            fi
+        fi
+    done <<< "$STAGED_GD"
+    if [[ $LINT_ERRORS -gt 0 ]]; then
+        fail "$LINT_ERRORS file(s) failed gdlint. Fix lint errors before committing."
+        exit $FAIL
+    else
+        ok "gdlint passed on all staged .gd files."
+    fi
+fi
+
+# ── 2. GameConfig @export guard ──────────────────────────────────────────────
+
+header "GameConfig @export guard"
+
+GAME_CONFIG_PATH="scripts/systems/game_config.gd"
+
+if git diff --cached --name-only | grep -qF "$GAME_CONFIG_PATH"; then
+    # File is staged — compare HEAD vs staged version.
+    HEAD_EXPORTS=$(git show "HEAD:$GAME_CONFIG_PATH" 2>/dev/null \
+        | grep -E '^@export var' \
+        | grep -oE 'var [a-zA-Z_]+' \
+        | sort || true)
+    STAGED_EXPORTS=$(git show ":$GAME_CONFIG_PATH" 2>/dev/null \
+        | grep -E '^@export var' \
+        | grep -oE 'var [a-zA-Z_]+' \
+        | sort || true)
+    REMOVED=$(comm -23 <(echo "$HEAD_EXPORTS") <(echo "$STAGED_EXPORTS") || true)
+    if [[ -n "$REMOVED" ]]; then
+        warn "The following @export vars were removed from GameConfig:"
+        while IFS= read -r v; do
+            warn "  - $v"
+        done <<< "$REMOVED"
+        warn "If this is intentional, update regression tests and SKILL.md before committing."
+        warn "Proceeding anyway — this is a warning, not a block."
+    else
+        ok "No GameConfig @export vars removed."
+    fi
+else
+    ok "$GAME_CONFIG_PATH not staged — skipping."
+fi
+
+# ── 3. GUT unit tests ────────────────────────────────────────────────────────
+
+header "GUT unit tests"
+
+if [[ "${SKIP_GUT:-0}" == "1" ]]; then
+    warn "SKIP_GUT=1 — skipping GUT. Do not merge without a passing CI run."
+else
+    # Find Godot: honour GODOT_EXE, then try PATH, then the local install path.
+    GODOT_EXE="${GODOT_EXE:-}"
+    if [[ -z "$GODOT_EXE" ]]; then
+        if command -v godot &>/dev/null; then
+            GODOT_EXE="godot"
+        elif [[ -x "C:/Users/smili/Documents/Godot/Installs/Godot_v4.5.1-stable_win64_console.exe" ]]; then
+            GODOT_EXE="C:/Users/smili/Documents/Godot/Installs/Godot_v4.5.1-stable_win64_console.exe"
+        fi
+    fi
+
+    if [[ -z "$GODOT_EXE" ]]; then
+        warn "Godot not found — skipping GUT. Set GODOT_EXE or add godot to PATH."
+        warn "Set SKIP_GUT=1 to suppress this warning."
+    else
+        echo "  Running GUT with: $GODOT_EXE"
+        EXIT_CODE=0
+        "$GODOT_EXE" \
+            --headless \
+            --path "$(pwd)" \
+            --display-driver headless \
+            --audio-driver Dummy \
+            -s addons/gut/gut_cmdln.gd \
+            -gdir=res://tests/unit \
+            -gexit 2>&1 || EXIT_CODE=$?
+        if [[ $EXIT_CODE -ne 0 ]]; then
+            fail "GUT unit tests FAILED (exit $EXIT_CODE). Fix failing tests before committing."
+            exit $FAIL
+        else
+            ok "All GUT unit tests passed."
+        fi
+    fi
+fi
+
+echo ""
+echo "pre-commit: all checks passed."
+exit $PASS

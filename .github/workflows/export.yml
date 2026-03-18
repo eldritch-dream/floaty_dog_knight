@@ -1,0 +1,94 @@
+name: Export
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  export:
+    name: Export Builds
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # export_presets.cfg must be committed to the repo for this to work.
+      # If the file is missing the export step will fail with a clear error.
+      - name: Verify export_presets.cfg exists
+        run: |
+          if [[ ! -f export_presets.cfg ]]; then
+            echo "::error::export_presets.cfg is not committed. Add it to the repo before the export workflow will function."
+            exit 1
+          fi
+
+      - name: Install Godot 4.5.1 headless
+        run: |
+          wget -q \
+            "https://github.com/godotengine/godot/releases/download/4.5.1-stable/Godot_v4.5.1-stable_linux.x86_64.zip" \
+            -O godot.zip
+          unzip -q godot.zip
+          chmod +x Godot_v4.5.1-stable_linux.x86_64
+          sudo mv Godot_v4.5.1-stable_linux.x86_64 /usr/local/bin/godot
+
+      - name: Install export templates
+        run: |
+          wget -q \
+            "https://github.com/godotengine/godot/releases/download/4.5.1-stable/Godot_v4.5.1-stable_export_templates.tpz" \
+            -O export_templates.tpz
+          mkdir -p ~/.local/share/godot/export_templates/4.5.1.stable
+          unzip -q export_templates.tpz -d /tmp/templates
+          mv /tmp/templates/templates/* ~/.local/share/godot/export_templates/4.5.1.stable/
+
+      - name: Import project
+        run: |
+          godot --headless --import 2>&1 | tail -10 || true
+          sleep 2
+
+      - name: Export Windows build
+        run: |
+          mkdir -p builds/windows
+          godot --headless --export-release "Windows Desktop" builds/windows/DoggoKnight.exe 2>&1
+
+      - name: Export Linux build
+        run: |
+          mkdir -p builds/linux
+          godot --headless --export-release "Linux/X11" builds/linux/DoggoKnight.x86_64 2>&1
+
+      # Web export for itch.io browser play.
+      # The "Web" preset in export_presets.cfg must target res://builds/web/index.html.
+      # Godot 4 web exports require SharedArrayBuffer — enable it in your itch.io
+      # game settings under "Embed options → SharedArrayBuffer support".
+      # The GL Compatibility renderer exports as WebGL2, supported in all modern browsers.
+      - name: Export Web build
+        run: |
+          mkdir -p builds/web
+          godot --headless --export-release "Web" builds/web/index.html 2>&1
+
+      # Zip all web export files into a single archive for itch.io upload.
+      # itch.io expects a zip with index.html at the root.
+      - name: Zip Web build
+        run: |
+          cd builds/web
+          zip -r ../../builds/DoggoKnight-web.zip .
+          cd ../..
+          echo "Web zip contents:"
+          unzip -l builds/DoggoKnight-web.zip
+
+      - name: Get version tag
+        id: version
+        run: echo "tag=$(git describe --tags --always --dirty 2>/dev/null || echo "build-${GITHUB_SHA::8}")" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: Doggo Knight ${{ steps.version.outputs.tag }}
+          draft: false
+          prerelease: false
+          files: |
+            builds/windows/DoggoKnight.exe
+            builds/linux/DoggoKnight.x86_64
+            builds/DoggoKnight-web.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  test:
+    name: GUT Test Suite
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Godot 4.5.1 headless
+        run: |
+          wget -q \
+            "https://github.com/godotengine/godot/releases/download/4.5.1-stable/Godot_v4.5.1-stable_linux.x86_64.zip" \
+            -O godot.zip
+          unzip -q godot.zip
+          chmod +x Godot_v4.5.1-stable_linux.x86_64
+          sudo mv Godot_v4.5.1-stable_linux.x86_64 /usr/local/bin/godot
+
+      # Generates the .godot/ import cache so GUT can find scripts.
+      - name: Import project
+        run: |
+          godot --headless --import 2>&1 | tail -10 || true
+          sleep 2
+
+      - name: Run GUT suite
+        run: |
+          godot --headless \
+            --path . \
+            --display-driver headless \
+            --audio-driver Dummy \
+            -s addons/gut/gut_cmdln.gd \
+            -gdir=res://tests \
+            -ginclude_subdirs \
+            -gjunit_xml_file=res://test_results.xml \
+            -gexit
+
+      - name: Upload test results artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gut-test-results
+          path: test_results.xml
+          if-no-files-found: ignore
+
+      - name: Report test results as PR annotations
+        if: always() && hashFiles('test_results.xml') != ''
+        uses: dorny/test-reporter@v1
+        with:
+          name: GUT Results
+          path: test_results.xml
+          reporter: java-junit
+          fail-on-error: true
