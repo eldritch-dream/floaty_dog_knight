@@ -56,6 +56,19 @@ func test_dash_duration_from_config() -> void:
 		"Dash should cover speed × duration meters")
 
 
+func test_dash_locked_by_default() -> void:
+	var unlocks := AbilityUnlocks.new()
+	assert_false(unlocks.dash_unlocked,
+		"Dash should be locked by default")
+
+
+func test_dash_unlock_enables_dash() -> void:
+	var unlocks := AbilityUnlocks.new()
+	unlocks.dash_unlocked = true
+	assert_true(unlocks.dash_unlocked,
+		"Dash should be available after unlock")
+
+
 func test_rapid_dash_rejected() -> void:
 	# Try to dash twice quickly — second should be rejected.
 	var config := GameConfig.new()
