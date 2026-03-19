@@ -91,3 +91,27 @@ jobs:
             builds/DoggoKnight-web.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install butler
+        run: |
+          curl -L -o butler.zip \
+            "https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default"
+          unzip butler.zip
+          chmod +x butler
+          ./butler -V
+
+      - name: Push Windows build to itch.io
+        run: |
+          ./butler push builds/windows/DoggoKnight.exe \
+            eldritch-dream/floaty-dog-knight:windows-64 \
+            --userversion "${{ steps.version.outputs.tag }}"
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+
+      - name: Push Web build to itch.io
+        run: |
+          ./butler push builds/web/ \
+            eldritch-dream/floaty-dog-knight:html5 \
+            --userversion "${{ steps.version.outputs.tag }}"
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
