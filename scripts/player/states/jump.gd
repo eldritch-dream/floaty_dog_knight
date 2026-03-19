@@ -44,7 +44,7 @@ func physics_update(delta: float) -> void:
 		player.velocity.z *= config.air_friction
 
 	# Air jump (double jump).
-	var can_air_jump := player.air_jumps_remaining > 0 and ability_unlocks.double_jump_unlocked
+	var can_air_jump: bool = player.air_jumps_remaining > 0 and ability_unlocks.double_jump_unlocked
 	if Input.is_action_just_pressed("jump") and can_air_jump:
 		player.air_jumps_remaining -= 1
 		player.velocity.y = config.air_jump_velocity
