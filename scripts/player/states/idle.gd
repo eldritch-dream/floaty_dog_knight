@@ -21,6 +21,9 @@ func physics_update(delta: float) -> void:
 		player.state_machine.transition_to("dash")
 		return
 
+	if _handle_combat_input():
+		return
+
 	# Movement → Run.
 	var input_dir: Vector2 = Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 	if input_dir.length() > 0.1:

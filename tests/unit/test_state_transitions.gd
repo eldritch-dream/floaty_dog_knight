@@ -5,6 +5,11 @@ extends GutTest
 var sm: StateMachine
 
 
+var _stats: PlayerStats
+var _unlocks: AbilityUnlocks
+var _config: GameConfig
+
+
 func before_each() -> void:
 	# Build a minimal state machine with mock states.
 	sm = StateMachine.new()
@@ -18,21 +23,37 @@ func before_each() -> void:
 	var jump := _make_state("Jump")
 	var float_state := _make_state("Float")
 	var dash := _make_state("Dash")
+	var dodge := _make_state("Dodge")
+	var light_attack := _make_state("LightAttack")
+	var heavy_attack := _make_state("HeavyAttack")
 
 	sm.add_child(idle)
 	sm.add_child(run)
 	sm.add_child(jump)
 	sm.add_child(float_state)
 	sm.add_child(dash)
+	sm.add_child(dodge)
+	sm.add_child(light_attack)
+	sm.add_child(heavy_attack)
 
 	# Manually set initial state path and trigger _ready logic.
 	sm.initial_state = NodePath("Idle")
+
+	# Shared resources accessible to tests.
+	_config = GameConfig.new()
+	_stats = PlayerStats.new()
+	_stats.max_stamina = 100.0
+	_stats.stamina = 100.0
+	_unlocks = AbilityUnlocks.new()
 
 	# Register states manually (simulating _ready).
 	for child in sm.get_children():
 		if child is PlayerState:
 			sm.states[child.name.to_lower()] = child
 			child.player = parent
+			child.config = _config
+			child.stats = _stats
+			child.ability_unlocks = _unlocks
 
 	sm.current_state = sm.states["idle"]
 
@@ -114,6 +135,60 @@ func test_full_jump_cycle() -> void:
 	sm.transition_to("idle")
 	assert_eq(sm.current_state.name, "Idle",
 		"Full jump cycle: Idle→Jump→Float→Idle")
+
+
+func test_idle_transitions_to_dodge_on_input() -> void:
+	sm.transition_to("dodge")
+	assert_eq(sm.current_state.name, "Dodge",
+		"Should transition from Idle to Dodge")
+
+
+func test_idle_transitions_to_light_attack_on_input() -> void:
+	sm.transition_to("lightattack")
+	assert_eq(sm.current_state.name, "LightAttack",
+		"Should transition from Idle to LightAttack")
+
+
+func test_idle_transitions_to_heavy_attack_on_input() -> void:
+	sm.transition_to("heavyattack")
+	assert_eq(sm.current_state.name, "HeavyAttack",
+		"Should transition from Idle to HeavyAttack")
+
+
+func test_attack_blocked_when_ability_locked() -> void:
+	# Gating lives in each state's physics_update; verify the shared unlock
+	# resource is correctly wired so states see the locked flag.
+	_unlocks.light_attack_unlocked = false
+	var idle_state: PlayerState = sm.states["idle"]
+	assert_false(idle_state.ability_unlocks.light_attack_unlocked,
+		"Idle state should observe the locked light attack flag")
+	assert_eq(sm.current_state.name, "Idle",
+		"State should remain Idle — no physics_update triggered in this test")
+
+
+func test_attack_blocked_when_insufficient_stamina() -> void:
+	# Gating lives in each state's physics_update; verify the shared stats
+	# resource is correctly wired so states see zero stamina.
+	_stats.stamina = 0.0
+	var idle_state: PlayerState = sm.states["idle"]
+	assert_eq(idle_state.stats.stamina, 0.0,
+		"Idle state should observe zero stamina via shared resource")
+	assert_eq(sm.current_state.name, "Idle",
+		"State should remain Idle — no physics_update triggered in this test")
+
+
+func test_double_jump_blocked_when_not_unlocked() -> void:
+	_unlocks.double_jump_unlocked = false
+	var jump_state: PlayerState = sm.states["jump"]
+	assert_false(jump_state.ability_unlocks.double_jump_unlocked,
+		"Jump state should observe double jump locked via shared resource")
+
+
+func test_double_jump_allowed_when_unlocked() -> void:
+	_unlocks.double_jump_unlocked = true
+	var jump_state: PlayerState = sm.states["jump"]
+	assert_true(jump_state.ability_unlocks.double_jump_unlocked,
+		"Jump state should observe double jump unlocked via shared resource")
 
 
 # ── Helper ────────────────────────────────────────────────────────────

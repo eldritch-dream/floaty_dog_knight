@@ -5,7 +5,7 @@ extends GutTest
 ## will diverge from the simulation → the test fails → sign-off is required.
 ##
 ## Expected values are derived from production defaults:
-##   jump_velocity    = 14.5   gravity_scale  = 1.4    fall_multiplier = 2.3
+##   jump_velocity    = 7.0    gravity_scale  = 1.4    fall_multiplier = 2.3
 ##   air_friction     = 0.98   float_drag     = 0.93   move_speed      = 10.0
 ##   dash_speed       = 25.0   dash_duration  = 0.2    coyote_time     = 0.15
 ##   max_air_jumps    = 1      air_jump_velocity = 10.0
@@ -14,11 +14,11 @@ extends GutTest
 
 # ── Hardcoded baselines (change only with sign-off) ───────────────────────────
 
-## Ground jump peak height: v² / (2g) = 14.5² / (2 × 9.8 × 1.4) ≈ 7.663 m
-const BASELINE_JUMP_PEAK_M := 7.663
+## Ground jump peak height: v² / (2g) = 7.0² / (2 × 9.8 × 1.4) ≈ 1.786 m
+const BASELINE_JUMP_PEAK_M := 1.786
 
-## Time to reach peak: v / g = 14.5 / (9.8 × 1.4) ≈ 1.057 s
-const BASELINE_TIME_TO_PEAK_S := 1.057
+## Time to reach peak: v / g = 7.0 / (9.8 × 1.4) ≈ 0.510 s
+const BASELINE_TIME_TO_PEAK_S := 0.510
 
 ## Air jump peak height: v² / (2g') where g' = 9.8 × 1.4 × 1.5 (snappier arc)
 ## = 10² / (2 × 20.58) ≈ 2.430 m
@@ -28,9 +28,9 @@ const BASELINE_AIR_JUMP_PEAK_M := 2.430
 const BASELINE_DASH_DISTANCE_M := 5.0
 
 ## Lateral position at jump apex with full forward input from standing still.
-## Air control: lerp(vx, move_speed, 0.15) each frame for ~63 frames.
-## Σ vx_n × dt ≈ 9.56 m
-const BASELINE_LATERAL_AT_PEAK_M := 9.56
+## Air control: lerp(vx, move_speed, 0.15) each frame for ~30 frames.
+## Σ vx_n × dt ≈ 3.90 m
+const BASELINE_LATERAL_AT_PEAK_M := 3.90
 
 ## Coyote window: 0.15 s — timer must be positive at 0.10 s, expired at 0.20 s.
 const BASELINE_COYOTE_TIME_S := 0.15

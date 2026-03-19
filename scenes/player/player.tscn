@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="Script" path="res://scripts/player/player.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/player/state_machine.gd" id="2"]
@@ -8,6 +8,10 @@
 [ext_resource type="Script" path="res://scripts/player/states/jump.gd" id="6"]
 [ext_resource type="Script" path="res://scripts/player/states/float.gd" id="7"]
 [ext_resource type="Script" path="res://scripts/player/states/dash.gd" id="8"]
+[ext_resource type="Script" path="res://scripts/systems/combo_system.gd" id="9"]
+[ext_resource type="Script" path="res://scripts/player/states/dodge.gd" id="10"]
+[ext_resource type="Script" path="res://scripts/player/states/light_attack.gd" id="11"]
+[ext_resource type="Script" path="res://scripts/player/states/heavy_attack.gd" id="12"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_001"]
 radius = 0.35
@@ -42,6 +46,9 @@ spring_length = 5.0
 [node name="Camera3D" type="Camera3D" parent="CameraRig/SpringArm3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 
+[node name="ComboSystem" type="Node" parent="."]
+script = ExtResource("9")
+
 [node name="StateMachine" type="Node" parent="."]
 script = ExtResource("2")
 initial_state = NodePath("Idle")
@@ -60,3 +67,12 @@ script = ExtResource("7")
 
 [node name="Dash" type="Node" parent="StateMachine"]
 script = ExtResource("8")
+
+[node name="Dodge" type="Node" parent="StateMachine"]
+script = ExtResource("10")
+
+[node name="LightAttack" type="Node" parent="StateMachine"]
+script = ExtResource("11")
+
+[node name="HeavyAttack" type="Node" parent="StateMachine"]
+script = ExtResource("12")
