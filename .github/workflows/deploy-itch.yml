@@ -1,0 +1,54 @@
+name: Deploy to itch.io
+
+on:
+  release:
+    types: [published]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  deploy:
+    name: Deploy via Butler
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read  # to download release assets
+
+    steps:
+      - name: Download release assets
+        run: |
+          gh release download "${{ github.event.release.tag_name }}" \
+            --pattern "DoggoKnight.exe" \
+            --pattern "DoggoKnight-web.zip" \
+            --dir ./release-assets
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Unzip Web build
+        run: |
+          mkdir -p deploy/web
+          unzip release-assets/DoggoKnight-web.zip -d deploy/web/
+
+      - name: Install butler
+        run: |
+          curl -L -o butler.zip \
+            "https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default"
+          unzip butler.zip
+          chmod +x butler
+          ./butler -V
+
+      - name: Push Windows build to itch.io
+        run: |
+          ./butler push release-assets/DoggoKnight.exe \
+            eldritch-dream/floaty-dog-knight:windows-64 \
+            --userversion "${{ github.event.release.tag_name }}"
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+
+      - name: Push Web build to itch.io
+        run: |
+          ./butler push deploy/web/ \
+            eldritch-dream/floaty-dog-knight:html5 \
+            --userversion "${{ github.event.release.tag_name }}"
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}

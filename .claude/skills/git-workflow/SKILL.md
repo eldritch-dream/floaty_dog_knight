@@ -81,9 +81,43 @@ Before opening a PR, confirm all of the following:
 
 ---
 
-## Pre-commit Hooks (Phase 3)
+## Pre-commit Hooks
 
-> Planned for Phase 3. Will enforce:
-> - `gdlint` on staged `.gd` files
-> - Block commit if any `tests/unit/` test fails
-> - Warn if an `@export` var is removed from `GameConfig`
+Install with `bash scripts/install_hooks.sh`. Enforces:
+- `gdlint` on staged `.gd` files (requires `pip install gdtoolkit`)
+- Block commit if any `tests/unit/` test fails (requires Godot on PATH or `GODOT_EXE`)
+- Warn if an `@export` var is removed from `GameConfig`
+
+Skip GUT locally with `SKIP_GUT=1 git commit` — does not bypass CI.
+
+---
+
+## Release Pipeline
+
+Full end-to-end flow from feature branch to itch.io:
+
+1. **Develop** on `feature/*` branch, branched from `dev`
+2. **PR feature/* → dev** — CI runs GUT suite; must pass before merge
+3. **PR dev → main** — CI runs GUT suite again; must pass before merge
+4. **Push to main** triggers `export.yml`:
+   - Builds Windows (`DoggoKnight.exe`, PCK embedded) and Web (`DoggoKnight-web.zip`)
+   - Creates a GitHub Release with both artifacts and a version tag
+5. **Publishing the GitHub Release** triggers `deploy-itch.yml`:
+   - Downloads `DoggoKnight.exe` and `DoggoKnight-web.zip` from the release
+   - Pushes Windows build to itch.io channel `windows-64` via butler
+   - Pushes Web build to itch.io channel `html5` via butler
+   - Both pushes tagged with the release version via `--userversion`
+6. **Verify** both channels are live on the itch.io dashboard
+
+### itch.io web build requirement
+
+> **Warning**: The web build requires **SharedArrayBuffer** enabled in itch.io game
+> settings under **Embed options → SharedArrayBuffer support**. Without it the
+> Godot 4 web export will not load in the browser.
+
+### Secrets required
+
+| Secret | Purpose |
+|---|---|
+| `BUTLER_API_KEY` | Butler authentication for itch.io pushes |
+| `GITHUB_TOKEN` | Auto-provided by Actions; used to download release assets |
