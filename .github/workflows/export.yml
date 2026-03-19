@@ -97,12 +97,12 @@ jobs:
           curl -L -o butler.zip \
             "https://github.com/itchio/butler/releases/latest/download/butler-linux-amd64.zip"
           unzip butler.zip
-          chmod +x butler
-          ./butler -V
+          chmod +x linux-amd64/butler
+          ./linux-amd64/butler -V
 
       - name: Push Windows build to itch.io
         run: |
-          ./butler push builds/windows/DoggoKnight.exe \
+          ./linux-amd64/butler push builds/windows/DoggoKnight.exe \
             eldritch-dream/floaty-dog-knight:windows-64 \
             --userversion "${{ steps.version.outputs.tag }}"
         env:
@@ -110,7 +110,7 @@ jobs:
 
       - name: Push Web build to itch.io
         run: |
-          ./butler push builds/web/ \
+          ./linux-amd64/butler push builds/web/ \
             eldritch-dream/floaty-dog-knight:html5 \
             --userversion "${{ steps.version.outputs.tag }}"
         env:
