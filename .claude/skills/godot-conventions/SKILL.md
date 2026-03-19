@@ -112,6 +112,24 @@ Config, stats, and unlocks are **not** autoloaded — they are distributed expli
 
 ---
 
+## Web Export Type Inference
+
+The Godot web export (WASM) is stricter than the desktop runtime about `:=` type inference.
+
+> **Rule**: Never use `:=` on compound boolean expressions. Always use an explicit `: bool =` annotation.
+
+```gdscript
+# BAD — fails to parse in web export
+var can_air_jump := player.air_jumps_remaining > 0 and ability_unlocks.double_jump_unlocked
+
+# GOOD
+var can_air_jump: bool = player.air_jumps_remaining > 0 and ability_unlocks.double_jump_unlocked
+```
+
+This applies to any expression mixing comparison operators (`>`, `<`, `==`) with `and`/`or`. Simple single-operator booleans (e.g. `var x := foo > 0`) may work but explicit typing is safer throughout.
+
+---
+
 ## Resource Pattern
 
 ### GameConfig
