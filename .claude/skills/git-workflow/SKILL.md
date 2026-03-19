@@ -99,15 +99,14 @@ Full end-to-end flow from feature branch to itch.io:
 1. **Develop** on `feature/*` branch, branched from `dev`
 2. **PR feature/* → dev** — CI runs GUT suite; must pass before merge
 3. **PR dev → main** — CI runs GUT suite again; must pass before merge
-4. **Push to main** triggers `export.yml`:
+4. **Push to main** triggers `export.yml` (single workflow, confirmed working):
    - Builds Windows (`DoggoKnight.exe`, PCK embedded) and Web (`DoggoKnight-web.zip`)
    - Creates a GitHub Release with both artifacts and a version tag
-5. **Publishing the GitHub Release** triggers `deploy-itch.yml`:
-   - Downloads `DoggoKnight.exe` and `DoggoKnight-web.zip` from the release
+   - Installs butler from `github.com/itchio/butler` releases (extracts to `linux-amd64/butler`)
    - Pushes Windows build to itch.io channel `windows-64` via butler
    - Pushes Web build to itch.io channel `html5` via butler
    - Both pushes tagged with the release version via `--userversion`
-6. **Verify** both channels are live on the itch.io dashboard
+5. **Verify** both channels are live on the itch.io dashboard
 
 ### itch.io web build requirement
 
@@ -120,4 +119,4 @@ Full end-to-end flow from feature branch to itch.io:
 | Secret | Purpose |
 |---|---|
 | `BUTLER_API_KEY` | Butler authentication for itch.io pushes |
-| `GITHUB_TOKEN` | Auto-provided by Actions; used to download release assets |
+| `GITHUB_TOKEN` | Auto-provided by Actions; used to create GitHub releases |
