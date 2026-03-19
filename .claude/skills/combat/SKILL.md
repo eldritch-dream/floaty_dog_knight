@@ -138,8 +138,43 @@ WorldManager.consume_spawn_point()  # called from new scene's player _ready()
 
 ---
 
+## Wiring a new combat state into the player
+
+1. Create `scripts/player/states/my_state.gd` extending `PlayerState`.
+2. Add `@export` script to `player.tscn` as an `ext_resource`, then add the state node as a child of `StateMachine`. Increment `load_steps` in the scene header.
+3. Add input checks in every ground/air state that should be able to trigger it (`idle.gd`, `run.gd`, `jump.gd`, `float.gd`). Pattern:
+   ```gdscript
+   if Input.is_action_just_pressed("my_action"):
+       if ability_unlocks.my_ability_unlocked and stats.stamina >= config.my_stamina_cost:
+           player.state_machine.transition_to("mystate")   # lowercase, no underscore
+           return
+   ```
+4. In the new state's `enter()`, spend the stamina:
+   ```gdscript
+   stats.spend_stamina(config.my_stamina_cost, config.stamina_regen_delay)
+   ```
+5. If the state needs a weapon hitbox, call `player.get_node_or_null("ComboSystem")` — it must exist as a **direct child of Player**, not of StateMachine.
+
+---
+
+## Input actions and control scheme (DS1-style)
+
+| Action | Keyboard | Gamepad |
+|---|---|---|
+| `jump` | Space | A / Cross |
+| `dash` | Ctrl | LB / L1 |
+| `dodge` | Shift | B / Circle |
+| `attack` | Left click | RB / R1 |
+| `heavy_attack` | Right click | RT / R2 (axis 5 ≥ 0.5) |
+
+`heavy_attack` on gamepad is `InputEventJoypadMotion axis:5 axis_value:0.5` — RT/R2 is an analogue axis, not a button.
+
+---
+
 ## Rule
 
-> **Ability gating always happens in the calling state before transition, never inside the state's `enter()`.** Check `ability_unlocks.X_unlocked` and `stats.stamina >= cost` before calling `state_machine.transition_to("dodge")`.
+> **Ability gating always happens in the calling state before transition, never inside the state's `enter()`.** Check `ability_unlocks.X_unlocked` **first**, then `stats.stamina >= cost`. The unlock is the outer gate; stamina is the inner gate. `enter()` only spends stamina — it never checks the unlock.
 
 > **PlayerStats never references GameConfig.** Pass primitive values (`base_xp: int`, `xp_exponent: float`) from config as arguments.
+
+> **Manual testing scene**: use the **hub** scene (`scenes/world/hub.tscn`) for all manual testing — it has the debug HUD. `test_room.tscn` is a minimal physics sandbox without HUD.

@@ -27,14 +27,17 @@ func physics_update(delta: float) -> void:
 	# Buffer jump press for when we land.
 	if Input.is_action_just_pressed("jump") and player.coyote_timer <= 0.0:
 		# Air jump if available.
-		if player.air_jumps_remaining > 0:
+		if player.air_jumps_remaining > 0 and ability_unlocks.double_jump_unlocked:
 			player.air_jumps_remaining -= 1
 			player.jump_buffered = false
 			player.state_machine.transition_to("jump")
 			return
-		# Otherwise buffer it for landing.
-		player.jump_buffered = true
-		player.jump_buffer_timer = config.jump_buffer_time
+		# Buffer for landing only when double jump is unlocked but out of uses.
+		# When locked entirely the press was a failed double-jump attempt — don't buffer,
+		# or it fires again on landing and mimics a double jump.
+		if ability_unlocks.double_jump_unlocked:
+			player.jump_buffered = true
+			player.jump_buffer_timer = config.jump_buffer_time
 
 	# Air control — camera-relative, high responsiveness.
 	var input_dir: Vector2 = Input.get_vector("move_left", "move_right", "move_forward", "move_back")
@@ -56,6 +59,9 @@ func physics_update(delta: float) -> void:
 	# Dash in air.
 	if Input.is_action_just_pressed("dash") and player.can_dash:
 		player.state_machine.transition_to("dash")
+		return
+
+	if _handle_combat_input():
 		return
 
 	# Landed.

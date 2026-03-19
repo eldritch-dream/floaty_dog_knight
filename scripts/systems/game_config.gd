@@ -12,7 +12,7 @@ extends Resource
 # ── Jump & Gravity ───────────────────────────────────────────────────
 @export_group("Jump & Gravity")
 ## Initial upward velocity when jumping.
-@export var jump_velocity: float = 14.5
+@export var jump_velocity: float = 7.0
 ## Multiplier applied to project gravity. Higher = heavier feel.
 @export var gravity_scale: float = 1.4
 ## Extra gravity multiplier when falling (velocity.y < 0).

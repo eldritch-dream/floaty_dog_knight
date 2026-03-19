@@ -64,7 +64,7 @@ All parameters live in `scripts/systems/game_config.gd`, resource at `resources/
 ### Jump & Gravity
 | Parameter | Current Value | Notes / Tuning Range |
 |---|---|---|
-| `jump_velocity` | `14.5` | Initial Y velocity on ground jump |
+| `jump_velocity` | `7.0` | Initial Y velocity on ground jump |
 | `gravity_scale` | `1.4` | Multiplier on project gravity (9.8 m/s²) |
 | `fall_multiplier` | `2.3` | Extra gravity when `velocity.y < 0` (Float state) |
 | `air_friction` | `0.98` | Per-frame XZ velocity retention when no input, airborne |
@@ -73,6 +73,10 @@ All parameters live in `scripts/systems/game_config.gd`, resource at `resources/
 | `air_jump_velocity` | `10.0` | Weaker than ground jump; upgradeable |
 
 **Air jump gravity**: air jumps apply `gravity_scale * 1.5` (hardcoded multiplier in `jump.gd:22`) for a snappier arc.
+
+**Double jump gate**: both `player.air_jumps_remaining > 0` **and** `ability_unlocks.double_jump_unlocked` must be true. Checking only `air_jumps_remaining` allows double-jumping regardless of the unlock flag.
+
+**Jump buffer and double jump lock**: when `double_jump_unlocked == false`, pressing jump while airborne does **not** set `jump_buffered`. Only players who have the ability (but have exhausted their air jumps) get the landing buffer. This prevents the "rapid-tap creates a second ground jump" bug.
 
 ### Dash
 | Parameter | Current Value | Notes / Tuning Range |
@@ -195,9 +199,19 @@ Float → Jump  (landed with buffered jump)
 Dash  → Run   (timer expired + on floor + input)
 Dash  → Idle  (timer expired + on floor + no input)
 Dash  → Float (timer expired + not on floor)
+
+Dodge      → Run / Idle / Float  (roll timer expired, same floor check as Dash)
+LightAttack → Run / Idle / Float  (ComboSystem emits attack_ended)
+HeavyAttack → Run / Idle / Float  (ComboSystem emits attack_ended)
 ```
 
+Dodge, LightAttack, and HeavyAttack are reachable from **Idle, Run, Jump, and Float** — any state that processes input. The gate is always checked in the *calling* state, not in the target state's `enter()`.
+
 **Invalid transitions**: `StateMachine.transition_to()` silently prints a warning and keeps the current state if the target name does not exist in the `states` dictionary.
+
+**State name lowercasing**: the StateMachine registers nodes as `child.name.to_lower()`. Use `"lightattack"` and `"heavyattack"` (no underscore) when calling `transition_to()`.
+
+**Stale `is_on_floor()` guard**: `Run` returns before calling `move_and_slide()` when jumping, leaving `is_on_floor()` stale-true on Jump's first frame. Jump's landed check uses `player.is_on_floor() and player.velocity.y <= 0.0` to prevent a false landing detection that would otherwise chain back through Run's coyote timer for an unchecked second jump.
 
 ---
 
@@ -205,4 +219,6 @@ Dash  → Float (timer expired + not on floor)
 
 > **Never change movement feel without updating regression tests and getting a sign-off comment in the PR.**
 
-Any change to GameConfig defaults, gravity arithmetic, jump velocity, dash distance, or air control lerp factor must be accompanied by updated baseline values in the movement regression tests (`tests/unit/test_jump_arc.gd`, `test_dash_cooldown.gd`, `test_coyote_time.gd`).
+Any change to GameConfig defaults, gravity arithmetic, jump velocity, dash distance, or air control lerp factor must be accompanied by updated baseline values in `tests/unit/test_movement_regression.gd` **and** in the `@export` default in `game_config.gd` (the test uses `GameConfig.new()`, which reads script defaults, not the `.tres` file).
+
+Three places must stay in sync: `game_config.gd` default → `default_config.tres` value → `test_movement_regression.gd` baseline constant.

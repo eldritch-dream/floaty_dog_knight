@@ -30,3 +30,21 @@ func update(_delta: float) -> void:
 ## Called every physics frame while this state is active (maps to _physics_process).
 func physics_update(_delta: float) -> void:
 	pass
+
+
+## Checks dodge, light attack, and heavy attack inputs in priority order.
+## Transitions and returns true if one fires so the caller can early-return.
+func _handle_combat_input() -> bool:
+	if Input.is_action_just_pressed("dodge"):
+		if ability_unlocks.dodge_unlocked and stats.stamina >= config.dodge_stamina_cost:
+			player.state_machine.transition_to("dodge")
+			return true
+	if Input.is_action_just_pressed("attack"):
+		if ability_unlocks.light_attack_unlocked and stats.stamina >= config.light_attack_stamina_cost:
+			player.state_machine.transition_to("lightattack")
+			return true
+	if Input.is_action_just_pressed("heavy_attack"):
+		if ability_unlocks.heavy_attack_unlocked and stats.stamina >= config.heavy_attack_stamina_cost:
+			player.state_machine.transition_to("heavyattack")
+			return true
+	return false

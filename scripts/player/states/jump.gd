@@ -44,7 +44,8 @@ func physics_update(delta: float) -> void:
 		player.velocity.z *= config.air_friction
 
 	# Air jump (double jump).
-	if Input.is_action_just_pressed("jump") and player.air_jumps_remaining > 0:
+	var can_air_jump := player.air_jumps_remaining > 0 and ability_unlocks.double_jump_unlocked
+	if Input.is_action_just_pressed("jump") and can_air_jump:
 		player.air_jumps_remaining -= 1
 		player.velocity.y = config.air_jump_velocity
 		# Stay in Jump state with fresh upward velocity.
@@ -55,13 +56,16 @@ func physics_update(delta: float) -> void:
 		player.state_machine.transition_to("dash")
 		return
 
+	if _handle_combat_input():
+		return
+
 	# Transition to float when falling.
 	if player.velocity.y < 0.0:
 		player.state_machine.transition_to("float")
 		return
 
-	# Landed (edge case).
-	if player.is_on_floor():
+	# Landed (edge case — guard against stale is_on_floor() when velocity is upward).
+	if player.is_on_floor() and player.velocity.y <= 0.0:
 		_land()
 		return
 

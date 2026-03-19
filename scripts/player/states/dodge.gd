@@ -39,10 +39,15 @@ func physics_update(delta: float) -> void:
 		_finish()
 		return
 
-	# Move at dodge speed along the roll direction.
+	# Apply gravity when airborne.
+	if not player.is_on_floor():
+		var base_gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity", 9.8)
+		player.velocity.y -= base_gravity * config.gravity_scale * delta
+
+	# Move at dodge speed along the roll direction (horizontal only).
 	var speed: float = config.dodge_distance / _dodge_duration()
-	player.velocity = _dodge_direction * speed
-	player.velocity.y = 0.0
+	player.velocity.x = _dodge_direction.x * speed
+	player.velocity.z = _dodge_direction.z * speed
 	player.move_and_slide()
 
 
