@@ -1,8 +1,13 @@
 extends CharacterBody3D
 ## Player controller — the dog knight. All logic delegated to StateMachine.
-## Exports GameConfig resource for inspector tuning.
+## Exports GameConfig, PlayerStats, and AbilityUnlocks resources for inspector tuning.
 
 @export var config: GameConfig
+@export var stats: PlayerStats
+@export var ability_unlocks: AbilityUnlocks
+
+## True while a dodge roll's i-frame window is active.
+var is_invincible: bool = false
 
 ## Node references — set in _ready.
 var state_machine: StateMachine
@@ -40,6 +45,19 @@ func _ready() -> void:
 	else:
 		push_warning("Player: No GameConfig assigned!")
 
+	# Initialise stamina regen rate from config (PlayerStats stays decoupled).
+	if stats and config:
+		stats.stamina_regen_rate = config.stamina_regen_rate
+	if stats:
+		state_machine.set_stats(stats)
+	else:
+		push_warning("Player: No PlayerStats assigned!")
+
+	if ability_unlocks:
+		state_machine.set_ability_unlocks(ability_unlocks)
+	else:
+		push_warning("Player: No AbilityUnlocks assigned!")
+
 
 func _unhandled_input(event: InputEvent) -> void:
 	# Mouse look.
@@ -55,6 +73,10 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _physics_process(delta: float) -> void:
+	# Tick stamina regen.
+	if stats:
+		stats.tick(delta)
+
 	# Gamepad camera look.
 	camera_rig.handle_gamepad_look(delta)
 

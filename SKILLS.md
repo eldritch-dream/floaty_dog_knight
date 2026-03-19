@@ -12,6 +12,7 @@ Agent Skills capture the actual architecture of this project so Claude can make 
 | **GUT Testing** | `.claude/skills/gut-testing/SKILL.md` | Creating a new script or writing tests |
 | **Git Workflow** | `.claude/skills/git-workflow/SKILL.md` | About to make a commit or create a branch |
 | **Godot Conventions** | `.claude/skills/godot-conventions/SKILL.md` | Creating a new scene, script, or node structure |
+| **Combat** | `.claude/skills/combat/SKILL.md` | Modifying combat, damage, hitboxes, dodge, stamina, or progression |
 
 ---
 
@@ -42,11 +43,20 @@ Agent Skills capture the actual architecture of this project so Claude can make 
 ### godot-conventions
 - Full project folder structure as it exists now
 - Naming conventions: PascalCase scenes/nodes/classes, snake_case scripts/variables
-- Autoloads: none currently registered
-- GameConfig resource pattern (explicit passing, not autoload)
+- Autoloads: `WorldManager` registered; rule: no `class_name` on autoloads
+- GameConfig / PlayerStats / AbilityUnlocks resource pattern and decoupling rules
 - Node naming inside `player.tscn`
 - World geometry rule: CSG primitives OK during dev, mark with TODO comment
-- All registered input actions
+- All registered input actions (including `dodge` Q/LB, `heavy_attack` RMB/Y)
+
+### combat
+- Full combat architecture: HitBox/HurtBox pattern, ComboSystem, WeaponBase/Sword
+- Stamina system: spend_stamina(), tick(), regen delay
+- Dodge i-frame mechanics
+- XPOrb collection and gain_xp() call signature
+- WorldManager autoload and Portal trigger
+- XP/level curve formula
+- Rules: ability gating before transition; PlayerStats never references GameConfig
 
 ---
 

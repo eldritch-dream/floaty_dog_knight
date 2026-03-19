@@ -22,18 +22,34 @@ floaty_dog_knight/
 │   ├── models/                 ← empty, .gdkeep placeholder
 │   └── textures/               ← empty, .gdkeep placeholder
 ├── resources/
-│   └── config/
-│       └── default_config.tres ← GameConfig resource (the canonical tuning file)
+│   ├── config/
+│   │   └── default_config.tres ← GameConfig resource (the canonical tuning file)
+│   ├── stats/
+│   │   └── default_stats.tres  ← PlayerStats defaults
+│   └── unlocks/
+│       └── default_unlocks.tres ← AbilityUnlocks defaults (all locked)
 ├── run_tests.ps1               ← Windows test runner
 ├── scenes/
+│   ├── combat/                 ← HitBox.tscn / HurtBox.tscn prefabs go here
+│   ├── collectibles/           ← XPOrb.tscn goes here
 │   ├── player/
 │   │   └── player.tscn         ← CharacterBody3D player scene
 │   ├── ui/                     ← empty, .gdkeep placeholder
 │   └── world/
-│       └── test_room.tscn      ← main scene / dev sandbox
+│       ├── hub.tscn            ← home base / owner NPC / portal to zone_01
+│       ├── zone_01.tscn        ← first zone (placeholder)
+│       └── test_room.tscn      ← movement sandbox (main scene during dev)
 ├── scripts/
 │   ├── new_test.sh             ← scaffold helper for new test files
-│   ├── autoloads/              ← empty, .gdkeep — no autoloads yet
+│   ├── collectibles/
+│   │   └── xp_orb.gd
+│   ├── combat/
+│   │   ├── hit_box.gd          ← Area3D; activate()/deactivate() per swing
+│   │   ├── hurt_box.gd         ← Area3D; receive_hit() → stats.take_damage()
+│   │   ├── sword.gd            ← extends WeaponBase; HitBox child = "HitBox"
+│   │   └── weapon_base.gd      ← abstract base; attack_light/heavy/deactivate_hitbox
+│   ├── npc/
+│   │   └── npc_base.gd         ← base NPC class; interact() virtual
 │   ├── player/
 │   │   ├── camera_rig.gd
 │   │   ├── player.gd
@@ -41,12 +57,21 @@ floaty_dog_knight/
 │   │   ├── state_machine.gd
 │   │   └── states/
 │   │       ├── dash.gd
+│   │       ├── dodge.gd        ← combat dodge roll with i-frames
 │   │       ├── float.gd
+│   │       ├── heavy_attack.gd
 │   │       ├── idle.gd
 │   │       ├── jump.gd
+│   │       ├── light_attack.gd
 │   │       └── run.gd
-│   └── systems/
-│       └── game_config.gd
+│   ├── systems/
+│   │   ├── ability_unlocks.gd  ← @export bools for each ability
+│   │   ├── combo_system.gd     ← manages hitbox active-frame windows
+│   │   ├── game_config.gd
+│   │   ├── player_stats.gd     ← health, stamina, XP/leveling + signals
+│   │   └── world_manager.gd    ← autoload: travel_to(scene, spawn_point)
+│   └── world/
+│       └── portal.gd           ← Area3D trigger → WorldManager.travel_to()
 ├── SKILLS.md
 └── tests/
     ├── unit/
@@ -77,27 +102,40 @@ floaty_dog_knight/
 
 ## Autoloads
 
-**None currently registered.** The `scripts/autoloads/` directory exists but is empty.
+| Autoload name | Script | Responsibility |
+|---|---|---|
+| `WorldManager` | `scripts/systems/world_manager.gd` | Scene transitions via `travel_to(scene_path, spawn_point)` |
 
-Config is distributed explicitly: `player.gd` holds `@export var config: GameConfig` and passes it to `StateMachine` and `CameraRig` in `_ready()`.
+Config, stats, and unlocks are **not** autoloaded — they are distributed explicitly via `@export` on the Player node.
 
-When adding an autoload:
-1. Register it in `project.godot` under `[autoload]`
-2. Document it here with its responsibilities
+> **Rule**: Autoloads must NOT have `class_name` — the autoload name itself IS the global identifier. Adding `class_name` creates a naming conflict in tests.
 
 ---
 
-## GameConfig Resource Pattern
+## Resource Pattern
 
-- Class defined at `scripts/systems/game_config.gd` (`class_name GameConfig`, `extends Resource`)
+### GameConfig
+- Class: `scripts/systems/game_config.gd` (`class_name GameConfig`, `extends Resource`)
 - Canonical instance: `resources/config/default_config.tres`
-- Assigned to Player node via `@export var config: GameConfig` in the Inspector
-- Distributed to all systems in `player._ready()`:
-  ```gdscript
-  state_machine.set_config(config)
-  camera_rig.setup(config, $CameraRig/SpringArm3D)
-  ```
+- Assigned to Player via `@export var config: GameConfig` in Inspector
+- Distributed in `player._ready()`: `state_machine.set_config(config)`, `camera_rig.setup(...)`
 - **All tunable values go here. No magic numbers anywhere in scripts.**
+
+### PlayerStats
+- Class: `scripts/systems/player_stats.gd` (`class_name PlayerStats`, `extends Resource`)
+- Canonical instance: `resources/stats/default_stats.tres`
+- Assigned via `@export var stats: PlayerStats`; `stamina_regen_rate` initialised from `config` in `player._ready()`
+- Provides: `spend_stamina()`, `tick(delta)`, `take_damage()`, `heal()`, `gain_xp()`; emits `health_changed`, `stamina_changed`, `died`, `leveled_up`
+
+### AbilityUnlocks
+- Class: `scripts/systems/ability_unlocks.gd` (`class_name AbilityUnlocks`, `extends Resource`)
+- Canonical instance: `resources/unlocks/default_unlocks.tres` (all `false` by default)
+- Assigned via `@export var ability_unlocks: AbilityUnlocks`
+- Contains bool flags: `double_jump_unlocked`, `dash_unlocked`, `dodge_unlocked`, `light_attack_unlocked`, `heavy_attack_unlocked`
+- States read unlocks directly: `ability_unlocks.dodge_unlocked` — no signals
+
+### Decoupling rule
+> **PlayerStats never references GameConfig.** Base values are copied once in `player._ready()`. States pass primitive arguments (`base_xp: int`, `xp_exponent: float`) from config rather than the resource object.
 
 ---
 
@@ -120,7 +158,7 @@ Player              (CharacterBody3D, script=player.gd)
     └── Dash            (Node, script=states/dash.gd)
 ```
 
-Player `config` is **not assigned in the scene file** — it must be set in the Inspector or via a parent scene/world that instantiates the player. Currently assigned via `test_room.tscn`.
+Player `config`, `stats`, and `ability_unlocks` must all be assigned in the Inspector or via a parent scene. Currently assigned via `hub.tscn` and `zone_01.tscn` (and `test_room.tscn` for the movement sandbox).
 
 ---
 
@@ -143,7 +181,9 @@ This convention avoids blocking gameplay development on art assets.
 | `move_right` | D | Left stick right |
 | `jump` | Space | Button 0 (A/Cross) |
 | `dash` | Shift | Button 1 (B/Circle) |
-| `attack` | Left mouse | Button 2 (X/Square) |
+| `attack` | Left mouse | Button 10 (R1/RB) |
+| `dodge` | Q | Button 9 (LB/L1) |
+| `heavy_attack` | Right mouse | Axis 5 (R2/RT) |
 | `camera_look_right` | — | Right stick right (axis 2) |
 | `camera_look_left` | — | Right stick left (axis 2) |
 | `camera_look_up` | — | Right stick up (axis 3) |
