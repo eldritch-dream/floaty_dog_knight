@@ -181,9 +181,9 @@ This convention avoids blocking gameplay development on art assets.
 | `move_right` | D | Left stick right |
 | `jump` | Space | Button 0 (A/Cross) |
 | `dash` | Shift | Button 1 (B/Circle) |
-| `attack` | Left mouse | Button 2 (X/Square) |
+| `attack` | Left mouse | Button 10 (R1/RB) |
 | `dodge` | Q | Button 9 (LB/L1) |
-| `heavy_attack` | Right mouse | Button 3 (Y/Triangle) |
+| `heavy_attack` | Right mouse | Axis 5 (R2/RT) |
 | `camera_look_right` | — | Right stick right (axis 2) |
 | `camera_look_left` | — | Right stick left (axis 2) |
 | `camera_look_up` | — | Right stick up (axis 3) |
