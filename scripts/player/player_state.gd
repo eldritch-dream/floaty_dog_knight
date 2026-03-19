@@ -6,6 +6,10 @@ extends Node
 var player: CharacterBody3D
 ## Reference to the GameConfig resource. Set by StateMachine on _ready.
 var config: GameConfig
+## Reference to the PlayerStats resource. Set by StateMachine on _ready.
+var stats: PlayerStats
+## Reference to the AbilityUnlocks resource. Set by StateMachine on _ready.
+var ability_unlocks: AbilityUnlocks
 
 
 ## Called when this state becomes active.

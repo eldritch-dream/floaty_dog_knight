@@ -10,6 +10,14 @@ $env:GODOT_DISABLE_LEAK_CHECKS = "1"
 $outFile = [System.IO.Path]::GetTempFileName()
 $errFile = [System.IO.Path]::GetTempFileName()
 
+Write-Host "Importing project (registering class_names)..." -ForegroundColor Cyan
+$importProc = Start-Process -FilePath $GodotExe `
+    -ArgumentList "--headless","--path",$ProjectPath,"--import" `
+    -Wait -PassThru -NoNewWindow `
+    -RedirectStandardOutput ([System.IO.Path]::GetTempFileName()) `
+    -RedirectStandardError ([System.IO.Path]::GetTempFileName())
+Start-Sleep 2
+
 Write-Host "Running GUT tests..." -ForegroundColor Cyan
 $proc = Start-Process -FilePath $GodotExe `
     -ArgumentList "--headless","--path",$ProjectPath,"--display-driver","headless","--audio-driver","Dummy","-s","addons/gut/gut_cmdln.gd","-gdir=res://tests","-ginclude_subdirs","-gexit" `

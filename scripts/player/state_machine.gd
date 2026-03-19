@@ -6,12 +6,12 @@ extends Node
 ## Emitted when the state changes. Useful for animation/debug.
 signal state_changed(old_state_name: String, new_state_name: String)
 
+@export var initial_state: NodePath
+
 ## The currently active state node.
 var current_state: PlayerState
 ## Dictionary mapping state names (lowercase) to state nodes.
 var states: Dictionary = {}
-
-@export var initial_state: NodePath
 
 
 func _ready() -> void:
@@ -33,6 +33,16 @@ func _ready() -> void:
 func set_config(config: GameConfig) -> void:
 	for state_node: PlayerState in states.values():
 		state_node.config = config
+
+
+func set_stats(stats: PlayerStats) -> void:
+	for state_node: PlayerState in states.values():
+		state_node.stats = stats
+
+
+func set_ability_unlocks(unlocks: AbilityUnlocks) -> void:
+	for state_node: PlayerState in states.values():
+		state_node.ability_unlocks = unlocks
 
 
 func _process(delta: float) -> void:

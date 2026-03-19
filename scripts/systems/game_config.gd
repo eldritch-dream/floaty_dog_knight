@@ -56,3 +56,41 @@ extends Resource
 @export var camera_pitch_max: float = 30.0
 ## Right-stick sensitivity multiplier for gamepad camera.
 @export var gamepad_camera_sensitivity: float = 3.0
+
+# ── Stamina ───────────────────────────────────────────────────────────
+@export_group("Stamina")
+## Base stamina regenerated per second (starting value for PlayerStats).
+@export var stamina_regen_rate: float = 20.0
+## Seconds after spending stamina before regen resumes (stamina tax).
+@export var stamina_regen_delay: float = 1.2
+
+# ── Dodge ─────────────────────────────────────────────────────────────
+@export_group("Dodge")
+## Duration of the invincibility window during a dodge roll (seconds).
+@export var i_frame_duration: float = 0.4
+## Stamina cost to execute a dodge roll.
+@export var dodge_stamina_cost: float = 25.0
+## Distance covered during a dodge roll (meters).
+@export var dodge_distance: float = 4.0
+
+# ── Combat ────────────────────────────────────────────────────────────
+@export_group("Combat")
+## Stamina cost for a light attack.
+@export var light_attack_stamina_cost: float = 15.0
+## Stamina cost for a heavy attack.
+@export var heavy_attack_stamina_cost: float = 30.0
+## Base damage dealt by a light attack.
+@export var light_attack_damage: float = 10.0
+## Base damage dealt by a heavy attack.
+@export var heavy_attack_damage: float = 25.0
+## Frames (at 60 fps) the light attack hitbox is active.
+@export var hitbox_active_frames_light: int = 8
+## Frames (at 60 fps) the heavy attack hitbox is active.
+@export var hitbox_active_frames_heavy: int = 14
+
+# ── Progression ───────────────────────────────────────────────────────
+@export_group("Progression")
+## Base XP required to level up (xp_required = xp_base * level ^ xp_exponent).
+@export var xp_base: int = 100
+## Exponent of the XP curve. Higher = steeper level-up costs.
+@export var xp_exponent: float = 1.5

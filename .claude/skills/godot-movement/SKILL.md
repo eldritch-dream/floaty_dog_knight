@@ -9,6 +9,7 @@
 The player is a `CharacterBody3D` at `scenes/player/player.tscn`, scripted at `scripts/player/player.gd`.
 
 All movement logic is **fully delegated to the StateMachine** — `player.gd` contains no per-frame movement math. The player script only:
+- Ticks the stamina regen timer (`stats.tick(delta)`)
 - Ticks the dash cooldown timer
 - Resets `air_jumps_remaining` when `is_on_floor()` is true
 - Counts down the jump buffer timer
@@ -25,6 +26,12 @@ var coyote_timer: float = 0.0
 var jump_buffered: bool = false
 var jump_buffer_timer: float = 0.0
 var air_jumps_remaining: int = 0   # reset to config.max_air_jumps on landing
+var is_invincible: bool = false    # true during dodge roll i-frame window
+
+# Resources
+@export var config: GameConfig
+@export var stats: PlayerStats
+@export var ability_unlocks: AbilityUnlocks
 ```
 
 ### Camera-relative direction utility
@@ -94,6 +101,35 @@ On exit: momentum preserved as `_dash_direction * move_speed * 0.5`; if airborne
 | `camera_pitch_max` | `30.0°` | Looking down limit |
 | `gamepad_camera_sensitivity` | `3.0` | Right-stick speed multiplier |
 
+### Stamina
+| Parameter | Current Value | Notes |
+|---|---|---|
+| `stamina_regen_rate` | `20.0` /s | Base rate — copied to `PlayerStats.stamina_regen_rate` at startup; increases on level-up |
+| `stamina_regen_delay` | `1.2` s | Pause before regen starts after spending stamina |
+
+### Dodge
+| Parameter | Current Value | Notes |
+|---|---|---|
+| `i_frame_duration` | `0.4` s | Invincibility window during dodge roll |
+| `dodge_stamina_cost` | `25.0` | Stamina spent per dodge |
+| `dodge_distance` | `4.0` m | Roll distance; speed derived as `distance / (distance / 12.0)` = 12 m/s |
+
+### Combat
+| Parameter | Current Value | Notes |
+|---|---|---|
+| `light_attack_stamina_cost` | `15.0` | Stamina per light swing |
+| `heavy_attack_stamina_cost` | `30.0` | Stamina per heavy swing |
+| `light_attack_damage` | `10.0` | Base light damage |
+| `heavy_attack_damage` | `25.0` | Base heavy damage |
+| `hitbox_active_frames_light` | `8` | 60-fps frames the light hitbox stays open |
+| `hitbox_active_frames_heavy` | `14` | 60-fps frames the heavy hitbox stays open |
+
+### Progression
+| Parameter | Current Value | Notes |
+|---|---|---|
+| `xp_base` | `100` | XP required at level 1 |
+| `xp_exponent` | `1.5` | `xp_required = int(xp_base * pow(level, xp_exponent))` |
+
 ---
 
 ## SpringArm3D Camera Rig
@@ -127,6 +163,9 @@ Player (CharacterBody3D)
 | `Jump` | `states/jump.gd` | Jump pressed (ground or coyote or air) |
 | `Float` | `states/float.gd` | Fell off ledge, or descending after jump peak |
 | `Dash` | `states/dash.gd` | Dash pressed + `can_dash == true` |
+| `Dodge` | `states/dodge.gd` | Dodge pressed + `ability_unlocks.dodge_unlocked` + stamina ≥ cost |
+| `LightAttack` | `states/light_attack.gd` | Attack pressed + `ability_unlocks.light_attack_unlocked` + stamina ≥ cost |
+| `HeavyAttack` | `states/heavy_attack.gd` | Heavy attack pressed + `ability_unlocks.heavy_attack_unlocked` + stamina ≥ cost |
 
 ### Valid transitions (as coded)
 
