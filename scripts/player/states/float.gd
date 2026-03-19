@@ -57,7 +57,7 @@ func physics_update(delta: float) -> void:
 		player.velocity.z *= config.air_friction
 
 	# Dash in air.
-	if Input.is_action_just_pressed("dash") and player.can_dash:
+	if Input.is_action_just_pressed("dash") and player.can_dash and ability_unlocks.dash_unlocked:
 		player.state_machine.transition_to("dash")
 		return
 
