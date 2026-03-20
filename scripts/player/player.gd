@@ -12,6 +12,9 @@ var is_invincible: bool = false
 ## Node references — set in _ready.
 var state_machine: StateMachine
 var camera_rig: CameraRig
+var combo_system: ComboSystem
+var weapon: WeaponBase
+var hurt_box: HurtBox
 
 # ── Dash state ───────────────────────────────────────────────────────
 ## Whether the player can currently dash (cooldown expired).
@@ -37,6 +40,16 @@ func _ready() -> void:
 	# Grab node references.
 	state_machine = $StateMachine as StateMachine
 	camera_rig = $CameraRig as CameraRig
+	combo_system = get_node_or_null("ComboSystem") as ComboSystem
+	weapon = get_node_or_null("PawWeapon") as WeaponBase
+	if weapon:
+		weapon.hit_box = weapon.get_node_or_null("HitBox") as HitBox
+	if combo_system and weapon:
+		combo_system.weapon = weapon
+	hurt_box = get_node_or_null("HurtBox") as HurtBox
+	if hurt_box:
+		hurt_box.owner_node = self
+		hurt_box.stats = stats
 
 	# Pass config to systems.
 	if config:

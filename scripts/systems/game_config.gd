@@ -94,3 +94,30 @@ extends Resource
 @export var xp_base: int = 100
 ## Exponent of the XP curve. Higher = steeper level-up costs.
 @export var xp_exponent: float = 1.5
+
+# ── Wisp Enemy ────────────────────────────────────────────────────────────
+@export_group("Wisp Enemy")
+## Maximum health of the Eldritch Wisp.
+@export var wisp_max_health: float = 35.0
+## Damage dealt per swipe attack.
+@export var wisp_damage: float = 15.0
+## Radius at which the Wisp detects the player and begins chasing.
+@export var wisp_aggro_range: float = 8.0
+## Radius at which the Wisp begins its attack wind-up.
+@export var wisp_attack_range: float = 2.0
+## Chase movement speed (m/s).
+@export var wisp_move_speed: float = 4.0
+## Patrol drift speed (m/s).
+@export var wisp_patrol_speed: float = 2.0
+## Radius around spawn point the Wisp patrols within.
+@export var wisp_patrol_radius: float = 5.0
+## Seconds the Wisp telegraphs its attack before the hitbox activates.
+@export var wisp_windup_duration: float = 0.8
+## Frames (at 60 fps) the attack hitbox is active.
+@export var wisp_attack_active_frames: int = 12
+## Seconds the Wisp is frozen after being hit.
+@export var wisp_stagger_duration: float = 0.4
+## Fixed height above spawn Y the Wisp floats at.
+@export var wisp_float_height: float = 0.5
+## XP awarded to the player when the Wisp dies.
+@export var wisp_xp_reward: int = 20

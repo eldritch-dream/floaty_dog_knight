@@ -1,0 +1,88 @@
+[gd_scene load_steps=15 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/wisp/wisp_enemy.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/enemies/wisp/wisp_state_machine.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/enemies/wisp/states/wisp_patrol.gd" id="3"]
+[ext_resource type="Script" path="res://scripts/enemies/wisp/states/wisp_chase.gd" id="4"]
+[ext_resource type="Script" path="res://scripts/enemies/wisp/states/wisp_windup.gd" id="5"]
+[ext_resource type="Script" path="res://scripts/enemies/wisp/states/wisp_attack.gd" id="6"]
+[ext_resource type="Script" path="res://scripts/enemies/wisp/states/wisp_stagger.gd" id="7"]
+[ext_resource type="Script" path="res://scripts/enemies/wisp/states/wisp_death.gd" id="8"]
+[ext_resource type="Script" path="res://scripts/combat/hurt_box.gd" id="9"]
+[ext_resource type="Script" path="res://scripts/combat/hit_box.gd" id="10"]
+
+[sub_resource type="StandardMaterial3D" id="WispMat"]
+albedo_color = Color(0.45, 0.1, 0.8, 1)
+emission_enabled = true
+emission = Color(0.45, 0.1, 0.8, 1)
+emission_energy_multiplier = 1.2
+
+[sub_resource type="SphereShape3D" id="BodyShape"]
+radius = 0.4
+
+[sub_resource type="SphereShape3D" id="HurtShape"]
+radius = 0.5
+
+[sub_resource type="SphereShape3D" id="HitShape"]
+radius = 1.2
+
+[sub_resource type="SphereMesh" id="HitDebugMesh"]
+radius = 1.2
+height = 2.4
+
+[sub_resource type="StandardMaterial3D" id="HitDebugMat"]
+transparency = 1
+albedo_color = Color(1, 0.1, 0.05, 0.3)
+emission_enabled = true
+emission = Color(1, 0.1, 0.05, 1)
+emission_energy_multiplier = 0.4
+
+[node name="WispEnemy" type="CharacterBody3D"]
+collision_layer = 2
+collision_mask = 1
+script = ExtResource("1")
+
+[node name="CSGSphere3D" type="CSGSphere3D" parent="."]
+radius = 0.35
+material = SubResource("WispMat")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("BodyShape")
+
+[node name="HurtBox" type="Area3D" parent="."]
+script = ExtResource("9")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HurtBox"]
+shape = SubResource("HurtShape")
+
+[node name="HitBox" type="Area3D" parent="."]
+script = ExtResource("10")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HitBox"]
+shape = SubResource("HitShape")
+
+[node name="DebugMesh" type="MeshInstance3D" parent="HitBox"]
+visible = false
+mesh = SubResource("HitDebugMesh")
+surface_material_override/0 = SubResource("HitDebugMat")
+
+[node name="WispStateMachine" type="Node" parent="."]
+script = ExtResource("2")
+
+[node name="Patrol" type="Node" parent="WispStateMachine"]
+script = ExtResource("3")
+
+[node name="Chase" type="Node" parent="WispStateMachine"]
+script = ExtResource("4")
+
+[node name="WindUp" type="Node" parent="WispStateMachine"]
+script = ExtResource("5")
+
+[node name="Attack" type="Node" parent="WispStateMachine"]
+script = ExtResource("6")
+
+[node name="Stagger" type="Node" parent="WispStateMachine"]
+script = ExtResource("7")
+
+[node name="Death" type="Node" parent="WispStateMachine"]
+script = ExtResource("8")

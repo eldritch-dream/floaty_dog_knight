@@ -162,21 +162,29 @@ This applies to any expression mixing comparison operators (`>`, `<`, `==`) with
 ### `scenes/player/player.tscn`
 
 ```
-Player              (CharacterBody3D, script=player.gd)
+Player              (CharacterBody3D, collision_layer=4, collision_mask=1)
 ├── CollisionShape3D    (CapsuleShape3D r=0.35 h=0.9, offset y=0.45)
 ├── MeshInstance3D      (CapsuleMesh, tan/corgi colour #D9A566, offset y=0.45)
 ├── CameraRig           (Node3D, script=camera_rig.gd)
-│   └── SpringArm3D     (spring_length=5.0, position.y=2.0)
+│   └── SpringArm3D     (spring_length=5.0, position.y=2.0, collision_mask=1)
 │       └── Camera3D
+├── ComboSystem         (Node, script=combo_system.gd)
+├── PawWeapon           (Node3D, script=weapon_base.gd, offset y=0.45)
+│   └── HitBox          (Area3D, script=hit_box.gd)
+│       ├── CollisionShape3D  (SphereShape3D r=1.0)
+│       └── DebugMesh   (MeshInstance3D, visible=false — shown during attack window)
+├── HurtBox             (Area3D, script=hurt_box.gd, offset y=0.45)
+│   └── CollisionShape3D  (CapsuleShape3D r=0.35 h=0.9)
 └── StateMachine        (Node, script=state_machine.gd, initial_state=NodePath("Idle"))
-    ├── Idle            (Node, script=states/idle.gd)
-    ├── Run             (Node, script=states/run.gd)
-    ├── Jump            (Node, script=states/jump.gd)
-    ├── Float           (Node, script=states/float.gd)
-    └── Dash            (Node, script=states/dash.gd)
+    ├── Idle / Run / Jump / Float / Dash
+    ├── Dodge           (Node, script=states/dodge.gd)
+    ├── LightAttack     (Node, script=states/light_attack.gd)
+    └── HeavyAttack     (Node, script=states/heavy_attack.gd)
 ```
 
-Player `config`, `stats`, and `ability_unlocks` must all be assigned in the Inspector or via a parent scene. Currently assigned via `hub.tscn` and `zone_01.tscn` (and `test_room.tscn` for the movement sandbox).
+`player._ready()` wires: `combo_system.weapon = PawWeapon`, `weapon.hit_box = PawWeapon/HitBox`, `hurt_box.owner_node = self`, `hurt_box.stats = stats`.
+
+Player `config`, `stats`, and `ability_unlocks` must all be assigned in the Inspector or via a parent scene. Currently assigned via `hub.tscn` and `zone_01.tscn`.
 
 ---
 

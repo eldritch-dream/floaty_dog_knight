@@ -50,20 +50,56 @@ else:
 
 ---
 
+## Collision Layer Convention
+
+| Layer | Bitmask value | Used for |
+|---|---|---|
+| 1 | 1 | World geometry (floor, walls, CSGBox platforms) |
+| 2 | 2 | Enemy physics bodies (CharacterBody3D) |
+| 3 | 4 | Player physics body (CharacterBody3D) |
+
+Area3D nodes (HitBox, HurtBox, Portal, XPOrb) use **default layer=1, mask=1** and detect each other via the Area3D overlap system, independent of physics body layers.
+
+```
+Player CharacterBody3D:  collision_layer=4  collision_mask=1
+Enemy CharacterBody3D:   collision_layer=2  collision_mask=1
+Floor/walls (StaticBody): collision_layer=1  collision_mask=1
+```
+
+> **Rule — any Area3D that must detect the player** (portals, pickup zones, damage volumes) needs its `collision_mask` updated. Default mask=1 only sees layer 1 (world), not the player on layer 4.
+
+```gdscript
+# Portals / damage volumes — need to see both world AND player:
+collision_mask = 5   # bitmask 1+4
+
+# XP orbs / pickups — only need to see the player, not world:
+collision_mask = 4   # bitmask 4
+```
+
+Keeping enemy bodies on layer 2 prevents the SpringArm3D (mask=1) from shortening against enemy geometry and prevents CharacterBody3D push interactions between enemy and player during dodge.
+
+---
+
 ## HitBox / HurtBox Pattern
 
 ### HitBox (`scripts/combat/hit_box.gd`)
 - `extends Area3D`, `class_name HitBox`
 - Starts disabled: `monitoring = false`, `monitorable = false`
-- `activate(damage, source)` — enable for a swing
-- `deactivate()` — close after active frames expire
-- On area overlap: calls `hurt_box.receive_hit(damage, source)` if the overlapping Area3D is a HurtBox
-- Skips self-hits: `hurt_box.owner_node == source` → ignored
+- `activate(damage, source)` — enable for a swing; clears `_hit_this_attack` list
+- `deactivate()` — close after active frames expire; clears hit list
+- Uses **`_physics_process` polling** (`get_overlapping_areas()`) — NOT `area_entered` signal
+- `_hit_this_attack: Array[HurtBox]` prevents multi-hitting the same target per swing
+- Skips targets still in `_hit_this_attack`; skips invincible targets **without adding them to the list** so the check runs again next frame (i-frames work correctly)
+
+> **Why polling instead of `area_entered`**: `area_entered` fires once when overlap begins. If the target is already inside the hitbox when it activates, or starts dodging after the signal fired, invincibility is never rechecked. Polling rechecks `is_invincible` every frame.
+
+### Debug mesh convention
+Add a `MeshInstance3D` child named exactly **`"DebugMesh"`** to any HitBox. Set `visible = false` in the scene. `HitBox.activate()` / `deactivate()` auto-toggle it via `_set_debug_visible()`. Use a semi-transparent emissive material matching the attack color.
 
 ### HurtBox (`scripts/combat/hurt_box.gd`)
 - `extends Area3D`, `class_name HurtBox`
 - `owner_node`: the character this belongs to (set in owning character's `_ready`)
-- `stats`: PlayerStats to call `take_damage()` on
+- `stats`: `PlayerStats` to call `take_damage()` on — **leave null for enemies** (route damage via `damaged` signal instead)
 - `receive_hit(amount, source)` — checks `owner_node.is_invincible`; if true, skips damage
 
 ### Invincibility (i-frames)
@@ -116,6 +152,67 @@ Level-up effects (in `PlayerStats._on_level_up()`):
 - `max_health += 10.0`, restored to full
 - `max_stamina += 5.0`, restored to full
 - `stamina_regen_rate += 2.0`
+
+---
+
+## Enemy Architecture
+
+### EnemyStats (`scripts/enemies/enemy_stats.gd`)
+Separate resource from `PlayerStats` — no stamina, no XP tracking on the resource itself.
+
+```gdscript
+class_name EnemyStats extends Resource
+signal died(enemy: Node)
+signal health_changed(new_val: float, max_val: float)
+@export var max_health: float
+@export var current_health: float
+@export var xp_reward: int
+@export var damage: float
+# ... other combat stats
+func take_damage(amount: float, enemy: Node = null) -> void
+func is_dead() -> bool
+```
+
+Build from `GameConfig` in the enemy's `_ready()` — never assign a `.tres` file for enemy stats.
+
+### Enemy state machine pattern
+**Critical: Godot's `_ready()` fires bottom-up (children before parents).** A child `WispStateMachine._ready()` runs before `WispEnemy._ready()`, so `enemy_stats` is null at that point.
+
+**Always use an explicit `setup()` method called from the enemy's `_ready()` after all vars are initialised:**
+
+```gdscript
+# In WispEnemy._ready():
+enemy_stats = EnemyStats.new()
+# ... populate from config ...
+state_machine = get_node("WispStateMachine")
+state_machine.setup(self, config, enemy_stats)  # NOT relying on _ready() order
+
+# In WispStateMachine:
+func setup(p_wisp, p_config, p_enemy_stats) -> void:
+    for child in get_children():
+        if child is WispState:
+            child.wisp = p_wisp
+            child.config = p_config
+            child.enemy_stats = p_enemy_stats
+    # ... enter initial state
+```
+
+### Enemy HurtBox wiring
+Leave `hurt_box.stats = null` for enemies — `HurtBox.receive_hit()` still emits `damaged` even when stats is null. Connect the signal instead:
+
+```gdscript
+hurt_box.owner_node = self        # for self-damage prevention
+hurt_box.damaged.connect(_on_damaged)  # route to enemy's take_damage()
+# DO NOT set hurt_box.stats — enemies use EnemyStats, not PlayerStats
+```
+
+### @export var player resolution gotcha
+`@export var player: CharacterBody3D` set via `player = NodePath("../Player")` in a parent `.tscn` may not resolve for instanced sub-scenes. Always add a fallback:
+
+```gdscript
+if not is_instance_valid(player):
+    player = get_parent().get_node_or_null("Player") as CharacterBody3D
+```
 
 ---
 
