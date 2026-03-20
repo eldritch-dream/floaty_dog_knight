@@ -10,6 +10,19 @@ func enter() -> void:
 	# Snap scale back to normal in case WindUp left it enlarged.
 	if wisp.visual:
 		wisp.visual.scale = Vector3.ONE
+	_set_emission(Color(1.0, 1.0, 1.0))  # White = stunned
+
+
+func exit() -> void:
+	_set_emission(Color(0.45, 0.1, 0.8))  # Restore purple
+
+
+func _set_emission(color: Color) -> void:
+	if not wisp.visual:
+		return
+	var mat := wisp.visual.material as StandardMaterial3D
+	if mat:
+		mat.emission = color
 
 
 func physics_update(delta: float) -> void:
