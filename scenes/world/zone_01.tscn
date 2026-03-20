@@ -53,6 +53,7 @@ material = SubResource("FloorMat")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 8)
 
 [node name="PortalBackToHub" type="Area3D" parent="."]
+collision_mask = 5
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 12)
 script = ExtResource("5")
 destination_scene = "res://scenes/world/hub.tscn"
