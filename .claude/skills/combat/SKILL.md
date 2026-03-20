@@ -66,11 +66,14 @@ Enemy CharacterBody3D:   collision_layer=2  collision_mask=1
 Floor/walls (StaticBody): collision_layer=1  collision_mask=1
 ```
 
-> **Rule — any Area3D that must detect the player** (portals, pickup zones, damage volumes) needs `collision_mask = 5` (layers 1+3, bitmask 1+4). Default mask=1 only sees layer 1 (world), not the player on layer 3.
+> **Rule — any Area3D that must detect the player** (portals, pickup zones, damage volumes) needs its `collision_mask` updated. Default mask=1 only sees layer 1 (world), not the player on layer 4.
 
 ```gdscript
-# In .tscn, on portal/pickup Area3D nodes:
-collision_mask = 5
+# Portals / damage volumes — need to see both world AND player:
+collision_mask = 5   # bitmask 1+4
+
+# XP orbs / pickups — only need to see the player, not world:
+collision_mask = 4   # bitmask 4
 ```
 
 Keeping enemy bodies on layer 2 prevents the SpringArm3D (mask=1) from shortening against enemy geometry and prevents CharacterBody3D push interactions between enemy and player during dodge.
