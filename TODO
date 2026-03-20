@@ -16,3 +16,11 @@ Bug A — Player doesn't spawn at the named spawn point
   If you later add a mechanic that reduces health mid-session and then travel to another scene, the damage persists (which is correct for gameplay). But if you quit and relaunch,
   default_stats.tres only saves @export vars — health, stamina, level, and xp are plain vars, so they reset to 100/100/1/0 on every cold start. This is expected behavior for now,
   but means you have no save system yet — something to track.
+
+Dark Souls-style stat investment system.
+  Instead of automatic stat increases on level-up, award souls/points that the player spends at a hub NPC to invest in specific stats (strength, endurance, health, etc.).
+  Current level-up auto-grants (+10 max HP, +5 max stamina, +2 regen) should be replaced or gated behind this system.
+
+XP orb gravity + player vacuum effect.
+  When an enemy dies, XP orbs should fall with gravity rather than spawning in place.
+  Eventually add a player vacuum: orbs within a radius accelerate toward the player automatically (like a magnet/loot vacuum).
