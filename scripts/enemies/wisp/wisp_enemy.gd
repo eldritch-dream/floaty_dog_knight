@@ -56,12 +56,19 @@ func _ready() -> void:
 	hurt_box = get_node("HurtBox") as HurtBox
 	visual = get_node("CSGSphere3D") as CSGSphere3D
 
+	# Fallback: typed export NodePath may not resolve for instanced sub-scenes.
+	if not is_instance_valid(player):
+		player = get_parent().get_node_or_null("Player") as CharacterBody3D
+
 	# Prevent self-damage: owner_node on HurtBox, source set by Attack state.
 	hurt_box.owner_node = self
 	# Stats intentionally left null on HurtBox — damage is handled via signal.
 	hurt_box.damaged.connect(_on_damaged)
 
 	enemy_stats.died.connect(_on_died)
+
+	# Init state machine after enemy_stats exists (avoids bottom-up _ready order).
+	state_machine.setup(self, config, enemy_stats)
 
 
 func _physics_process(delta: float) -> void:
@@ -74,10 +81,19 @@ func take_damage(amount: float) -> void:
 	if enemy_stats.is_dead():
 		return
 	enemy_stats.take_damage(amount, self)
+	_flash_hit()
 	# Notify current state — WindUp uses this to interrupt into Stagger.
 	var current: WispState = state_machine.current_state
 	if current and current.has_method("on_damaged"):
 		current.on_damaged()
+
+
+func _flash_hit() -> void:
+	if not is_instance_valid(visual):
+		return
+	var tween: Tween = create_tween()
+	tween.tween_property(visual, "scale", Vector3(0.6, 0.6, 0.6), 0.05)
+	tween.tween_property(visual, "scale", Vector3.ONE, 0.1)
 
 
 func _on_damaged(amount: float, _source: Node) -> void:

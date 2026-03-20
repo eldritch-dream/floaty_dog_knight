@@ -12,17 +12,15 @@ var current_state: WispState
 var states: Dictionary = {}
 
 
-func _ready() -> void:
-	var wisp: CharacterBody3D = get_parent() as CharacterBody3D
-	var config: GameConfig = wisp.config if wisp else null
-	var enemy_stats: EnemyStats = wisp.enemy_stats if wisp else null
-
+## Called explicitly by WispEnemy._ready() after enemy_stats is created.
+## Avoids Godot's bottom-up _ready() order leaving enemy_stats null.
+func setup(p_wisp: CharacterBody3D, p_config: GameConfig, p_enemy_stats: EnemyStats) -> void:
 	for child in get_children():
 		if child is WispState:
 			states[child.name.to_lower()] = child
-			child.wisp = wisp
-			child.config = config
-			child.enemy_stats = enemy_stats
+			child.wisp = p_wisp
+			child.config = p_config
+			child.enemy_stats = p_enemy_stats
 
 	if states.size() > 0:
 		current_state = states.values()[0]
