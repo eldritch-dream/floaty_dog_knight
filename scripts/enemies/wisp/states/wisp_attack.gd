@@ -8,11 +8,21 @@ func enter() -> void:
 	_frames_remaining = config.wisp_attack_active_frames
 	if wisp.hit_box:
 		wisp.hit_box.activate(enemy_stats.damage, wisp)
+	_set_emission(Color(1.0, 0.1, 0.05))
 
 
 func exit() -> void:
 	if wisp.hit_box:
 		wisp.hit_box.deactivate()
+	_set_emission(Color(0.45, 0.1, 0.8))
+
+
+func _set_emission(color: Color) -> void:
+	if not wisp.visual:
+		return
+	var mat := wisp.visual.material as StandardMaterial3D
+	if mat:
+		mat.emission = color
 
 
 func physics_update(delta: float) -> void:

@@ -118,6 +118,6 @@ extends Resource
 ## Seconds the Wisp is frozen after being hit.
 @export var wisp_stagger_duration: float = 0.4
 ## Fixed height above spawn Y the Wisp floats at.
-@export var wisp_float_height: float = 1.2
+@export var wisp_float_height: float = 0.5
 ## XP awarded to the player when the Wisp dies.
 @export var wisp_xp_reward: int = 20

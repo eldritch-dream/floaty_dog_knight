@@ -25,12 +25,20 @@ func activate(dmg: float, src: Node) -> void:
 	source = src
 	monitoring = true
 	monitorable = true
+	_set_debug_visible(true)
 
 
 ## Disable the hitbox between attacks.
 func deactivate() -> void:
 	monitoring = false
 	monitorable = false
+	_set_debug_visible(false)
+
+
+func _set_debug_visible(v: bool) -> void:
+	var mesh := get_node_or_null("DebugMesh") as MeshInstance3D
+	if mesh:
+		mesh.visible = v
 
 
 func _on_area_entered(area: Area3D) -> void:
