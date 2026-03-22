@@ -57,6 +57,7 @@ floaty_dog_knight/
 │   │   ├── state_machine.gd
 │   │   └── states/
 │   │       ├── dash.gd
+│   │       ├── death.gd        ← terminal state; emits player_died signal
 │   │       ├── dodge.gd        ← combat dodge roll with i-frames
 │   │       ├── float.gd
 │   │       ├── heavy_attack.gd
@@ -69,6 +70,9 @@ floaty_dog_knight/
 │   │   ├── combo_system.gd     ← manages hitbox active-frame windows
 │   │   ├── game_config.gd
 │   │   ├── player_stats.gd     ← health, stamina, XP/leveling + signals
+│   │   ├── respawn_manager.gd  ← autoload: freeze→wait→heal→travel on death
+│   │   ├── save_data.gd        ← RefCounted snapshot: capture/apply/to_dict/from_dict
+│   │   ├── save_manager.gd     ← autoload: save/load/delete; web + desktop storage
 │   │   └── world_manager.gd    ← autoload: travel_to(scene, spawn_point)
 │   └── world/
 │       └── portal.gd           ← Area3D trigger → WorldManager.travel_to()
@@ -105,6 +109,8 @@ floaty_dog_knight/
 | Autoload name | Script | Responsibility |
 |---|---|---|
 | `WorldManager` | `scripts/systems/world_manager.gd` | Scene transitions via `travel_to(scene_path, spawn_point)` |
+| `RespawnManager` | `scripts/systems/respawn_manager.gd` | Death sequence: freeze → wait → heal → travel to hub |
+| `SaveManager` | `scripts/systems/save_manager.gd` | Persist/restore player state; web (localStorage) + desktop (FileAccess) |
 
 Config, stats, and unlocks are **not** autoloaded — they are distributed explicitly via `@export` on the Player node.
 
@@ -177,6 +183,7 @@ Player              (CharacterBody3D, collision_layer=4, collision_mask=1)
 │   └── CollisionShape3D  (CapsuleShape3D r=0.35 h=0.9)
 └── StateMachine        (Node, script=state_machine.gd, initial_state=NodePath("Idle"))
     ├── Idle / Run / Jump / Float / Dash
+    ├── Death           (Node, script=states/death.gd)
     ├── Dodge           (Node, script=states/dodge.gd)
     ├── LightAttack     (Node, script=states/light_attack.gd)
     └── HeavyAttack     (Node, script=states/heavy_attack.gd)

@@ -7,12 +7,7 @@ Storyline
 Sounds
 Animations
 Enemies
-Bug A — Player doesn't spawn at the named spawn point
-  WorldManager.travel_to("zone_01.tscn", "entrance") stores "entrance" but nothing ever calls consume_spawn_point() and moves the player to that node's position. The player just
-  spawns at the scene's hardcoded Player position. The portal works, but the spawn-point system is wired on the write side only — the read side is missing. Low severity now (only
-  one zone), but needs fixing before zones have multiple entry points.
-
-  Bug B — Stats resource is shared by reference, so health/stamina mutate the .tres file's in-memory object
+Bug B — Stats resource is shared by reference, so health/stamina mutate the .tres file's in-memory object
   If you later add a mechanic that reduces health mid-session and then travel to another scene, the damage persists (which is correct for gameplay). But if you quit and relaunch,
   default_stats.tres only saves @export vars — health, stamina, level, and xp are plain vars, so they reset to 100/100/1/0 on every cold start. This is expected behavior for now,
   but means you have no save system yet — something to track.
@@ -24,3 +19,15 @@ Dark Souls-style stat investment system.
 XP orb gravity + player vacuum effect.
   When an enemy dies, XP orbs should fall with gravity rather than spawning in place.
   Eventually add a player vacuum: orbs within a radius accelerate toward the player automatically (like a magnet/loot vacuum).
+
+Death penalty — item/currency loss on death.
+  Currently death preserves everything (XP, level, unlocks). Consider losing a portion
+  of held currency or dropping items at the death location (DS1/DS3 style), once an
+  inventory/currency system exists.
+
+Auto-restore last scene on cold start (DS1-style load-in).
+  SaveManager stores last_scene but the game always boots into hub. True DS1 feel would
+  auto-travel to last_scene on load. Requires hub to act as a boot/loading pass-through.
+  Design decision needed: what does "last safe point" mean — last portal used, last rest
+  site, or literally last position? Depends on checkpoint system design.
+  Also requires saving last known Vector3 position and restoring it via spawn point system.

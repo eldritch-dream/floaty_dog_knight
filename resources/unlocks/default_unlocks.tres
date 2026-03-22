@@ -4,3 +4,8 @@
 
 [resource]
 script = ExtResource("1")
+double_jump_unlocked = true
+dash_unlocked = true
+dodge_unlocked = true
+light_attack_unlocked = true
+heavy_attack_unlocked = true

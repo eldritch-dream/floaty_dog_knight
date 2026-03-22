@@ -57,8 +57,8 @@ script = ExtResource("5")
 npc_name = "The Owner"
 
 [node name="PortalToZone01" type="Area3D" parent="."]
-collision_mask = 5
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 1.5, -6)
+collision_mask = 5
 script = ExtResource("6")
 destination_scene = "res://scenes/world/zone_01.tscn"
 destination_spawn_point = "entrance"

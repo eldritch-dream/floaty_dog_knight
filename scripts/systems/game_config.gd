@@ -95,6 +95,14 @@ extends Resource
 ## Exponent of the XP curve. Higher = steeper level-up costs.
 @export var xp_exponent: float = 1.5
 
+# ── Respawn ───────────────────────────────────────────────────────────────
+@export_group("Respawn")
+## Total seconds from death to scene transition (includes 0.3 s freeze).
+## Set longer than the future death animation duration when animations are added.
+@export var death_respawn_delay: float = 1.5
+## Fraction of max health restored on respawn (1.0 = full, 0.5 = half).
+@export var respawn_health_percent: float = 1.0
+
 # ── Wisp Enemy ────────────────────────────────────────────────────────────
 @export_group("Wisp Enemy")
 ## Maximum health of the Eldritch Wisp.
