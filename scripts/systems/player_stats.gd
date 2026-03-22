@@ -8,6 +8,7 @@ signal health_changed(new_value: float, max_value: float)
 signal stamina_changed(new_value: float, max_value: float)
 signal died
 signal leveled_up(new_level: int)
+signal xp_changed(new_xp: int)
 
 # ── Exported defaults ───────────────────────────────────────────────────
 @export var max_health: float = 100.0
@@ -68,6 +69,7 @@ func gain_xp(amount: int, base_xp: int, xp_exponent: float) -> void:
 		level += 1
 		_on_level_up()
 		leveled_up.emit(level)
+	xp_changed.emit(xp)
 
 func _xp_required(base_xp: int, xp_exponent: float) -> int:
 	return int(base_xp * pow(level, xp_exponent))

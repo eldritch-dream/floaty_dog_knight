@@ -18,6 +18,8 @@ config/features=PackedStringArray("4.5", "GL Compatibility")
 [autoload]
 
 WorldManager="*res://scripts/systems/world_manager.gd"
+RespawnManager="*res://scripts/systems/respawn_manager.gd"
+SaveManager="*res://scripts/systems/save_manager.gd"
 
 [display]
 

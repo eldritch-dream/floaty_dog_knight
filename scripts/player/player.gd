@@ -2,12 +2,17 @@ extends CharacterBody3D
 ## Player controller — the dog knight. All logic delegated to StateMachine.
 ## Exports GameConfig, PlayerStats, and AbilityUnlocks resources for inspector tuning.
 
+## Emitted when the Death state is entered. UI and future animation system hook here.
+signal player_died
+
 @export var config: GameConfig
 @export var stats: PlayerStats
 @export var ability_unlocks: AbilityUnlocks
 
 ## True while a dodge roll's i-frame window is active.
 var is_invincible: bool = false
+## True once the player has died — blocks camera input until scene reloads.
+var is_dead: bool = false
 
 ## Node references — set in _ready.
 var state_machine: StateMachine
@@ -63,6 +68,7 @@ func _ready() -> void:
 		stats.stamina_regen_rate = config.stamina_regen_rate
 	if stats:
 		state_machine.set_stats(stats)
+		stats.died.connect(_on_player_died)
 	else:
 		push_warning("Player: No PlayerStats assigned!")
 
@@ -71,10 +77,21 @@ func _ready() -> void:
 	else:
 		push_warning("Player: No AbilityUnlocks assigned!")
 
+	# Bug A fix — read the spawn point set by WorldManager and position player there.
+	var spawn_point_name: String = WorldManager.consume_spawn_point()
+	if spawn_point_name != "":
+		var spawn_node: Node3D = get_parent().get_node_or_null(spawn_point_name) as Node3D
+		if spawn_node:
+			global_position = spawn_node.global_position
+
+	# Register with SaveManager. On cold start this also applies any existing save.
+	if stats and ability_unlocks:
+		SaveManager.register_player(stats, ability_unlocks)
+
 
 func _unhandled_input(event: InputEvent) -> void:
 	# Mouse look.
-	if event is InputEventMouseMotion:
+	if not is_dead and event is InputEventMouseMotion:
 		camera_rig.handle_mouse_input(event as InputEventMouseMotion)
 
 	# Toggle mouse capture with Escape.
@@ -91,7 +108,8 @@ func _physics_process(delta: float) -> void:
 		stats.tick(delta)
 
 	# Gamepad camera look.
-	camera_rig.handle_gamepad_look(delta)
+	if not is_dead:
+		camera_rig.handle_gamepad_look(delta)
 
 	# Dash cooldown.
 	if not can_dash:
@@ -112,6 +130,15 @@ func _physics_process(delta: float) -> void:
 
 	# State machine handles the rest (movement, gravity, state transitions).
 	# It calls physics_update on the current state automatically.
+
+
+## Called when PlayerStats.died fires. Transitions to the terminal Death state
+## and hands off the respawn sequence to RespawnManager.
+func _on_player_died() -> void:
+	is_dead = true
+	is_invincible = true
+	state_machine.transition_to("death")
+	RespawnManager.handle_death(stats, config)
 
 
 ## Helper: compute camera-relative movement direction from input.

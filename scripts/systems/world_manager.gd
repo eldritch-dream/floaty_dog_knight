@@ -22,6 +22,8 @@ func travel_to(scene_path: String, spawn_point: String = "") -> void:
 	_travelling = true
 	_pending_spawn_point = spawn_point
 	travel_started.emit(scene_path)
+	# Save before the scene swaps so stats are captured at the transition point.
+	SaveManager.save_game(scene_path)
 	# Defer the actual swap so physics/signal handlers in the current frame finish.
 	call_deferred("_do_travel", scene_path)
 

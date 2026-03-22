@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3]
+[gd_scene load_steps=21 format=3]
 
 [ext_resource type="Script" path="res://scripts/player/player.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/player/state_machine.gd" id="2"]
@@ -15,6 +15,7 @@
 [ext_resource type="Script" path="res://scripts/combat/weapon_base.gd" id="13"]
 [ext_resource type="Script" path="res://scripts/combat/hit_box.gd" id="14"]
 [ext_resource type="Script" path="res://scripts/combat/hurt_box.gd" id="15"]
+[ext_resource type="Script" path="res://scripts/player/states/death.gd" id="16"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_001"]
 radius = 0.35
@@ -99,6 +100,9 @@ script = ExtResource("11")
 
 [node name="HeavyAttack" type="Node" parent="StateMachine"]
 script = ExtResource("12")
+
+[node name="Death" type="Node" parent="StateMachine"]
+script = ExtResource("16")
 
 [node name="PawWeapon" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)

@@ -44,8 +44,8 @@ if ($proc.ExitCode -ne 0) {
     Write-Host "ALL TESTS PASSED" -ForegroundColor Green
 }
 
-# Kill any lingering Godot processes (GUT -gexit sometimes doesn't terminate cleanly)
-Start-Sleep 2
-Get-Process | Where-Object { $_.Name -like "*Godot*" -and $_.Id -ne $PID } | Stop-Process -Force -ErrorAction SilentlyContinue
+# Kill the test process if -gexit didn't terminate it cleanly.
+# Only targets the specific process started above — never touches other Godot instances.
+if (-not $proc.HasExited) { Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue }
 
 exit $proc.ExitCode
