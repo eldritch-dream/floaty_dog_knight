@@ -39,6 +39,11 @@ var visual: CSGSphere3D
 func _ready() -> void:
 	spawn_position = global_position
 	spawn_y = global_position.y
+	# Register with the enemies group so DreamManager.enter_dream() can reset
+	# this node via call_group. Groups set as instance overrides in a parent
+	# .tscn file are not reliably picked up by get_nodes_in_group() in Godot 4,
+	# so we add the group explicitly here instead.
+	add_to_group("enemies")
 
 	# Build EnemyStats from config values.
 	enemy_stats = EnemyStats.new()
@@ -102,3 +107,37 @@ func _on_damaged(amount: float, _source: Node) -> void:
 
 func _on_died(_enemy: Node) -> void:
 	state_machine.transition_to("death")
+
+
+## Called by DreamManager via call_group("enemies", "reset") when the player rests.
+## Revives the wisp at its spawn position with full health, ready to patrol again.
+func reset() -> void:
+	# Rebuild EnemyStats from config so health, died signal, etc. are fresh.
+	enemy_stats = EnemyStats.new()
+	enemy_stats.max_health = config.wisp_max_health
+	enemy_stats.current_health = config.wisp_max_health
+	enemy_stats.xp_reward = config.wisp_xp_reward
+	enemy_stats.damage = config.wisp_damage
+	enemy_stats.attack_range = config.wisp_attack_range
+	enemy_stats.aggro_range = config.wisp_aggro_range
+	enemy_stats.move_speed = config.wisp_move_speed
+	enemy_stats.stagger_duration = config.wisp_stagger_duration
+	enemy_stats.died.connect(_on_died)
+	hurt_box.damaged.connect(_on_damaged)
+
+	# Re-enable visual and collision.
+	if visual:
+		visual.visible = true
+	var col: CollisionShape3D = get_node_or_null("CollisionShape3D") as CollisionShape3D
+	if col:
+		col.disabled = false
+	if hurt_box:
+		hurt_box.monitoring = true
+		hurt_box.monitorable = true
+
+	# Return to spawn position.
+	global_position = spawn_position
+
+	# Re-enable physics and restart the state machine from patrol.
+	set_physics_process(true)
+	state_machine.setup(self, config, enemy_stats)

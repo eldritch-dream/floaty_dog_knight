@@ -39,6 +39,12 @@ func save_game(scene_path: String) -> void:
 		return
 	var data: SaveData = SaveData.new()
 	data.capture(_stats, _unlocks, scene_path)
+	# Preserve respawn point — bed fields are written only by DreamManager._update_respawn_point()
+	# and must survive every subsequent save_game() call.
+	var existing: SaveData = load_game()
+	if existing:
+		data.last_bed_id = existing.last_bed_id
+		data.last_bed_scene = existing.last_bed_scene
 	_write(JSON.stringify(data.to_dict()))
 
 

@@ -25,6 +25,30 @@ Death penalty — item/currency loss on death.
   of held currency or dropping items at the death location (DS1/DS3 style), once an
   inventory/currency system exists.
 
+Weapon type system (Session B+).
+  Distinct weapon classes (sword, axe, spell staff, ...) each scaling with a primary
+  stat: Strength, Dexterity, or Intelligence. Dexterity and Intelligence not yet
+  implemented as investable stats.
+
+DS1-style weapon stat scaling (Session B+).
+  Flat damage bonus = stat_value × weapon_scale_factor. Letter grades
+  (S/A/B/C/D/E) map to scale factors (S ≈ 1.0 down to E ≈ 0.1), stored per weapon.
+  Requires weapon type system above.
+
+Strength stat combat wiring (Session B).
+  PlayerStats.damage_multiplier field, set via invest_in_stat("strength").
+  Wire into light_attack.gd and heavy_attack.gd: multiply config damage by
+  stats.damage_multiplier. Add Strength row to StatAllocationScreen.
+
+Stamina regen scaling.
+  Regen rate does not change on level-up by design. Intended to be unlocked via
+  an item or ability upgrade, not stat investment.
+
+Dream — Session B visual upgrade.
+  Replace DreamManager's placeholder CanvasLayer overlay with a full scene
+  transition to dream_space.tscn (distinct shader, skybox). Only DreamManager
+  needs to change — stat allocation screen and PlayerStats are untouched.
+
 Auto-restore last scene on cold start (DS1-style load-in).
   SaveManager stores last_scene but the game always boots into hub. True DS1 feel would
   auto-travel to last_scene on load. Requires hub to act as a boot/loading pass-through.

@@ -13,6 +13,8 @@ signal player_died
 var is_invincible: bool = false
 ## True once the player has died — blocks camera input until scene reloads.
 var is_dead: bool = false
+## True while the Dream overlay is open — blocks all player input and physics.
+var is_in_dream: bool = false
 
 ## Node references — set in _ready.
 var state_machine: StateMachine
@@ -63,9 +65,11 @@ func _ready() -> void:
 	else:
 		push_warning("Player: No GameConfig assigned!")
 
-	# Initialise stamina regen rate from config (PlayerStats stays decoupled).
+	# Initialise stamina regen rate and per-point gains from config (PlayerStats stays decoupled).
 	if stats and config:
 		stats.stamina_regen_rate = config.stamina_regen_rate
+		stats.constitution_health_per_point = config.constitution_health_per_point
+		stats.endurance_stamina_per_point = config.endurance_stamina_per_point
 	if stats:
 		state_machine.set_stats(stats)
 		stats.died.connect(_on_player_died)
@@ -78,8 +82,20 @@ func _ready() -> void:
 		push_warning("Player: No AbilityUnlocks assigned!")
 
 	# Bug A fix — read the spawn point set by WorldManager and position player there.
+	# On cold start (no pending spawn), restore to the last-used Dog Bed (DS1-style).
 	var spawn_point_name: String = WorldManager.consume_spawn_point()
-	if spawn_point_name != "":
+	if spawn_point_name.is_empty():
+		var save_data: SaveData = SaveManager.load_game()
+		if save_data and not save_data.last_bed_scene.is_empty():
+			var current_path: String = get_tree().current_scene.scene_file_path
+			if save_data.last_bed_scene == current_path:
+				# Last bed is in this scene — spawn near it directly.
+				spawn_point_name = save_data.last_bed_id
+			else:
+				# Last bed is in a different scene — travel there now.
+				# WorldManager will set the pending spawn point for that scene's Player._ready().
+				WorldManager.travel_to(save_data.last_bed_scene, save_data.last_bed_id)
+	if not spawn_point_name.is_empty():
 		var spawn_node: Node3D = get_parent().get_node_or_null(spawn_point_name) as Node3D
 		if spawn_node:
 			global_position = spawn_node.global_position
@@ -88,8 +104,13 @@ func _ready() -> void:
 	if stats and ability_unlocks:
 		SaveManager.register_player(stats, ability_unlocks)
 
+	# Register with DreamManager so it can toggle is_in_dream on this instance.
+	DreamManager.register_player(self)
+
 
 func _unhandled_input(event: InputEvent) -> void:
+	if is_in_dream:
+		return
 	# Mouse look.
 	if not is_dead and event is InputEventMouseMotion:
 		camera_rig.handle_mouse_input(event as InputEventMouseMotion)
@@ -103,6 +124,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if is_in_dream:
+		return
 	# Tick stamina regen.
 	if stats:
 		stats.tick(delta)

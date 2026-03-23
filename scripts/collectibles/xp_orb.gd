@@ -19,5 +19,6 @@ func _on_body_entered(body: Node3D) -> void:
 		return
 	var player_stats: PlayerStats = body.get("stats") as PlayerStats
 	if player_stats and config:
-		player_stats.gain_xp(xp_amount, config.xp_base, config.xp_exponent)
+		player_stats.gain_xp(xp_amount, config.xp_base, config.xp_exponent,
+				config.stat_points_per_level)
 	queue_free()

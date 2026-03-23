@@ -19,11 +19,12 @@ func enter() -> void:
 		wisp.visual.visible = false
 
 	_spawn_xp_orb()
-	_defer_free()
+	# Do NOT queue_free — wisp stays in the scene tree so reset() can revive it.
+	_disable_wisp()
 
 
 func physics_update(_delta: float) -> void:
-	pass  # Nothing to do while waiting for the deferred free.
+	pass  # Dormant — disabled by _disable_wisp().
 
 
 func _spawn_xp_orb() -> void:
@@ -34,6 +35,11 @@ func _spawn_xp_orb() -> void:
 	orb.global_position = wisp.global_position
 
 
-func _defer_free() -> void:
-	await wisp.get_tree().create_timer(0.3).timeout
-	wisp.call_deferred("queue_free")
+func _disable_wisp() -> void:
+	# Disable physics and collision so the dormant wisp has no runtime cost.
+	# CollisionShape3D must be deferred — cannot change shape during physics.
+	wisp.set_physics_process(false)
+	var col: CollisionShape3D = wisp.get_node_or_null(
+			"CollisionShape3D") as CollisionShape3D
+	if col:
+		col.call_deferred("set_disabled", true)

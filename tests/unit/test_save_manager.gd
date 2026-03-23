@@ -221,3 +221,95 @@ func test_web_and_desktop_paths_produce_same_dict_shape() -> void:
 	assert_true(d.has("stamina_regen_rate"))
 	assert_true(d.has("ability_unlocks"))
 	assert_true(d.has("last_scene"))
+	assert_true(d.has("last_bed_id"))
+	assert_true(d.has("last_bed_scene"))
+	assert_true(d.has("unspent_stat_points"))
+
+
+# ── Bed fields ────────────────────────────────────────────────────────────────
+
+func test_last_bed_id_persists() -> void:
+	var data: SaveData = SaveData.new()
+	data.capture(_stats, _unlocks, "res://scenes/world/zone_01.tscn")
+	data.last_bed_id = "zone_01_bed"
+	var d: Dictionary = data.to_dict()
+	var restored: SaveData = SaveData.new()
+	restored.from_dict(d)
+	assert_eq(restored.last_bed_id, "zone_01_bed")
+
+
+func test_last_bed_scene_persists() -> void:
+	var data: SaveData = SaveData.new()
+	data.capture(_stats, _unlocks, "res://scenes/world/zone_01.tscn")
+	data.last_bed_scene = "res://scenes/world/zone_01.tscn"
+	var d: Dictionary = data.to_dict()
+	var restored: SaveData = SaveData.new()
+	restored.from_dict(d)
+	assert_eq(restored.last_bed_scene, "res://scenes/world/zone_01.tscn")
+
+
+func test_save_game_preserves_bed_fields_across_subsequent_saves() -> void:
+	# Simulate the DreamManager flow: _update_respawn_point writes bed fields via _write(),
+	# then exit_dream calls save_game(). save_game() must NOT wipe those fields.
+	_save_manager._stats = _stats
+	_save_manager._unlocks = _unlocks
+	# Step 1 — write bed fields directly (as _update_respawn_point does).
+	var bed_data: SaveData = SaveData.new()
+	bed_data.last_bed_id = "zone_01_bed"
+	bed_data.last_bed_scene = "res://scenes/world/zone_01.tscn"
+	_save_manager._write(JSON.stringify(bed_data.to_dict()))
+	# Step 2 — a subsequent save_game() call (as exit_dream does) must preserve them.
+	_save_manager.save_game("res://scenes/world/zone_01.tscn")
+	var result: SaveData = _save_manager.load_game()
+	assert_not_null(result)
+	assert_eq(result.last_bed_id, "zone_01_bed")
+	assert_eq(result.last_bed_scene, "res://scenes/world/zone_01.tscn")
+
+
+func test_unspent_stat_points_persists() -> void:
+	_stats.unspent_stat_points = 3
+	_save_manager._stats = _stats
+	_save_manager._unlocks = _unlocks
+	_save_manager.save_game("res://scenes/world/hub.tscn")
+	var data: SaveData = _save_manager.load_game()
+	assert_eq(data.unspent_stat_points, 3)
+
+
+func test_backward_compat_load_without_bed_fields() -> void:
+	# Simulate a save written before bed fields existed (no keys present).
+	var old_dict: Dictionary = {
+		"player_level": 2,
+		"player_xp": 50,
+		"player_max_health": 110.0,
+		"player_max_stamina": 105.0,
+		"stamina_regen_rate": 20.0,
+		"ability_unlocks": {},
+		"last_scene": "res://scenes/world/hub.tscn",
+	}
+	var data: SaveData = SaveData.new()
+	data.from_dict(old_dict)
+	assert_eq(data.last_bed_id, "")
+	assert_eq(data.last_bed_scene, "")
+	assert_eq(data.unspent_stat_points, 0)
+
+
+func test_bad_bed_scene_path_is_cleared_on_load() -> void:
+	# Simulate a save written by the old bug where bed_scene_path stored the
+	# DogBed subscene path instead of the world scene path.
+	var bad_dict: Dictionary = {
+		"player_level": 1,
+		"player_xp": 0,
+		"player_max_health": 100.0,
+		"player_max_stamina": 100.0,
+		"stamina_regen_rate": 20.0,
+		"ability_unlocks": {},
+		"last_scene": "res://scenes/world/hub.tscn",
+		"last_bed_id": "hub_bed",
+		"last_bed_scene": "res://scenes/world/dog_bed.tscn",
+		"unspent_stat_points": 0,
+	}
+	var data: SaveData = SaveData.new()
+	data.from_dict(bad_dict)
+	# Bad path must be cleared so cold-start falls back to hub rather than loading
+	# a sceneless file with no Player node.
+	assert_eq(data.last_bed_scene, "")
