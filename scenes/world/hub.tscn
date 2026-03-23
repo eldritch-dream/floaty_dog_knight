@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://dckoq5orn51lv"]
+[gd_scene load_steps=14 format=3 uid="uid://dckoq5orn51lv"]
 
 [ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="1"]
 [ext_resource type="Resource" uid="uid://b4j4x1ugileum" path="res://resources/config/default_config.tres" id="2"]
@@ -7,6 +7,7 @@
 [ext_resource type="Script" uid="uid://b65fid5g01dvg" path="res://scripts/npc/npc_base.gd" id="5"]
 [ext_resource type="Script" uid="uid://cha4is6gmsd00" path="res://scripts/world/portal.gd" id="6"]
 [ext_resource type="Script" uid="uid://yipgpahf6d0y" path="res://scripts/ui/debug_hud.gd" id="7"]
+[ext_resource type="PackedScene" path="res://scenes/world/dog_bed.tscn" id="8"]
 
 [sub_resource type="Environment" id="Environment_001"]
 background_mode = 1
@@ -81,6 +82,11 @@ offset_right = 300.0
 offset_bottom = 180.0
 text = "HP: —"
 label_settings = SubResource("LabelSettings_001")
+
+[node name="hub_bed" parent="." instance=ExtResource("8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 0.15, -1.5)
+config = ExtResource("2")
+bed_id = "hub_bed"
 
 [node name="Player" parent="." instance=ExtResource("1")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 5)

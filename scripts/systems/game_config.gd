@@ -103,6 +103,27 @@ extends Resource
 ## Fraction of max health restored on respawn (1.0 = full, 0.5 = half).
 @export var respawn_health_percent: float = 1.0
 
+# ── Dog Bed ───────────────────────────────────────────────────────────────
+@export_group("Dog Bed")
+## Radius around the bed within which the player can trigger the interact prompt.
+@export var dog_bed_interact_radius: float = 2.5
+## If true, all enemies in the scene reset to full health when the player rests.
+@export var enemy_respawn_on_rest: bool = true
+
+# ── Dream ──────────────────────────────────────────────────────────────────
+@export_group("Dream")
+## Input action name used to enter the dream at a dog bed.
+@export var dream_enter_key: String = "ui_interact"
+
+# ── Stat Investment ────────────────────────────────────────────────────────
+@export_group("Stat Investment")
+## Stat points granted per level-up. Points must be spent at a Dog Bed.
+@export var stat_points_per_level: int = 1
+## Max health gained per Constitution point invested.
+@export var constitution_health_per_point: float = 15.0
+## Max stamina gained per Endurance point invested.
+@export var endurance_stamina_per_point: float = 8.0
+
 # ── Wisp Enemy ────────────────────────────────────────────────────────────
 @export_group("Wisp Enemy")
 ## Maximum health of the Eldritch Wisp.

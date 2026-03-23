@@ -137,6 +137,31 @@ Exit code `0` = all tests pass. Any non-zero = failure.
 
 ---
 
+## Manual Test Checklist Format
+
+When generating a manual test checklist for the user to execute in-game, use this format — it is easy to copy-paste into Notepad and track during play:
+
+```
+**Section Name**
+1.1 Brief description of what to verify
+1.2 Next check
+1.3 Another check
+
+**Next Section**
+2.1 First check in section
+2.2 Second check
+```
+
+Rules:
+- Numbered denotations: `1.1`, `1.2`, `2.1`, etc. (section.item)
+- Single line per check — no sub-bullets, no extra spacing within a section
+- Blank line between sections only
+- User marks results as `[P]` (pass) or `[X]` (fail) or `[ ]` (not yet tested)
+- No large horizontal spacing between items — keep it tight so it fits in a narrow notepad window
+- Do NOT use markdown checkbox syntax (`- [ ]`) — just the plain numbered format above
+
+---
+
 ## scripts/new_test.sh
 
 A scaffolding helper lives at `scripts/new_test.sh`. Usage:

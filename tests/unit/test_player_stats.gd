@@ -100,15 +100,15 @@ func test_leveled_up_signal_emitted() -> void:
 	stats.gain_xp(100, 100, 1.5)
 	assert_signal_emitted(stats, "leveled_up")
 
-func test_level_up_increases_max_health() -> void:
-	var old_max := stats.max_health
-	stats.gain_xp(100, 100, 1.5)
-	assert_gt(stats.max_health, old_max)
+func test_level_up_grants_unspent_stat_points() -> void:
+	# Stat allocation is manual (at Dog Beds) — level-up no longer auto-allocates.
+	stats.gain_xp(100, 100, 1.5, 1)
+	assert_eq(stats.unspent_stat_points, 1)
 
-func test_level_up_restores_health_to_new_max() -> void:
-	stats.health = 50.0
-	stats.gain_xp(100, 100, 1.5)
-	assert_eq(stats.health, stats.max_health)
+func test_level_up_does_not_auto_increase_max_health() -> void:
+	var old_max: float = stats.max_health
+	stats.gain_xp(100, 100, 1.5, 1)
+	assert_eq(stats.max_health, old_max)
 
 func test_xp_required_grows_with_level() -> void:
 	# Level 1 needs 100, level 2 needs int(100 * 2^1.5) = 282
@@ -117,3 +117,60 @@ func test_xp_required_grows_with_level() -> void:
 	# Should NOT level up on just 100 more XP at level 2
 	stats.gain_xp(100, 100, 1.5)
 	assert_eq(stats.level, 2)
+
+# ── Stat Investment ───────────────────────────────────────────────────────────
+
+func test_stat_points_pending_signal_emitted() -> void:
+	watch_signals(stats)
+	stats.gain_xp(100, 100, 1.5, 1)
+	assert_signal_emitted(stats, "stat_points_pending")
+
+func test_invest_constitution_increases_max_health() -> void:
+	stats.unspent_stat_points = 1
+	stats.constitution_health_per_point = 15.0
+	var old_max: float = stats.max_health
+	stats.invest_in_stat("constitution")
+	assert_eq(stats.max_health, old_max + 15.0)
+
+func test_invest_endurance_increases_max_stamina() -> void:
+	stats.unspent_stat_points = 1
+	stats.endurance_stamina_per_point = 8.0
+	var old_max: float = stats.max_stamina
+	stats.invest_in_stat("endurance")
+	assert_eq(stats.max_stamina, old_max + 8.0)
+
+func test_invest_returns_false_with_no_points() -> void:
+	stats.unspent_stat_points = 0
+	var result: bool = stats.invest_in_stat("constitution")
+	assert_false(result)
+
+func test_invest_decrements_unspent_points() -> void:
+	stats.unspent_stat_points = 2
+	stats.invest_in_stat("constitution")
+	assert_eq(stats.unspent_stat_points, 1)
+
+func test_invest_unknown_stat_returns_false() -> void:
+	stats.unspent_stat_points = 1
+	var result: bool = stats.invest_in_stat("strength")
+	assert_false(result)
+
+func test_invest_unknown_stat_does_not_consume_point() -> void:
+	stats.unspent_stat_points = 1
+	stats.invest_in_stat("strength")
+	assert_eq(stats.unspent_stat_points, 1)
+
+func test_get_investable_stats_returns_constitution() -> void:
+	var inv: Dictionary = stats.get_investable_stats()
+	assert_true(inv.has("constitution"))
+
+func test_get_investable_stats_returns_endurance() -> void:
+	var inv: Dictionary = stats.get_investable_stats()
+	assert_true(inv.has("endurance"))
+
+func test_get_investable_stats_shape() -> void:
+	var inv: Dictionary = stats.get_investable_stats()
+	var entry: Dictionary = inv.get("constitution", {})
+	assert_true(entry.has("label"))
+	assert_true(entry.has("description"))
+	assert_true(entry.has("current"))
+	assert_true(entry.has("gain"))

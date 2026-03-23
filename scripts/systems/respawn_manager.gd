@@ -38,6 +38,13 @@ func _run_sequence(stats: PlayerStats, config: GameConfig) -> void:
 	stats.health = stats.max_health * config.respawn_health_percent
 	stats.health_changed.emit(stats.health, stats.max_health)
 
-	# Step 4 — travel to hub. WorldManager.travel_to() also triggers a save,
-	# so the restored health and hub scene are persisted automatically.
-	WorldManager.travel_to("res://scenes/world/hub.tscn", "SpawnPoint")
+	# Step 4 — travel to last-used Dog Bed, falling back to hub if none recorded.
+	# WorldManager.travel_to() also triggers a save automatically.
+	var data: SaveData = SaveManager.load_game()
+	var bed_scene: String = data.last_bed_scene if data else ""
+	var bed_id: String = data.last_bed_id if data else ""
+	if bed_scene.is_empty():
+		# No bed used yet — fall back to hub SpawnPoint (same as pre-PR behaviour).
+		bed_scene = "res://scenes/world/hub.tscn"
+		bed_id = "SpawnPoint"
+	WorldManager.travel_to(bed_scene, bed_id)
