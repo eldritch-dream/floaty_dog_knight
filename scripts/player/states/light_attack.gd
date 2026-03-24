@@ -8,6 +8,7 @@ var _finished: bool = false
 func enter() -> void:
 	_finished = false
 	stats.spend_stamina(config.light_attack_stamina_cost, config.stamina_regen_delay)
+	AudioManager.play_sfx("swing_light")
 
 	_combo_system = player.get_node_or_null("ComboSystem") as ComboSystem
 	if _combo_system:

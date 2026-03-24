@@ -150,3 +150,27 @@ extends Resource
 @export var wisp_float_height: float = 0.5
 ## XP awarded to the player when the Wisp dies.
 @export var wisp_xp_reward: int = 20
+
+# ── XP Orb ────────────────────────────────────────────────────────────────
+@export_group("XP Orb")
+## Initial upward velocity when an orb spawns (m/s).
+@export var orb_pop_velocity: float = 4.0
+## Fraction of world gravity applied to falling orbs (lighter than world).
+@export var orb_gravity_multiplier: float = 0.3
+## Amplitude of the idle bob sine wave (meters).
+@export var orb_bob_height: float = 0.3
+## Frequency of the idle bob (cycles per second).
+@export var orb_bob_speed: float = 2.0
+## Seconds after spawn before vacuum activates — lets the pop and bob play first.
+@export var orb_vacuum_delay: float = 0.6
+## Distance from player at which vacuum pull begins (meters).
+@export var orb_vacuum_radius: float = 4.0
+## Speed at which an orb moves toward the player while vacuuming (m/s).
+@export var orb_vacuum_speed: float = 8.0
+## Seconds before an uncollected orb auto-awards XP and disappears.
+@export var orb_lifetime: float = 15.0
+
+# ── Audio ─────────────────────────────────────────────────────────────────
+@export_group("Audio")
+## Max audible distance for positional 3D sound sources (meters).
+@export var audio_3d_max_distance: float = 20.0

@@ -9,6 +9,7 @@ func enter() -> void:
 	if wisp.hit_box:
 		wisp.hit_box.activate(enemy_stats.damage, wisp)
 	_set_emission(Color(1.0, 0.1, 0.05))
+	AudioManager.play_sfx("enemy_attack", wisp.global_position)
 
 
 func exit() -> void:

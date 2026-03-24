@@ -2,7 +2,12 @@
   "permissions": {
     "allow": [
       "Bash(powershell.exe -File run_tests.ps1 2>&1)",
-      "Bash(powershell -File run_tests.ps1)"
+      "Bash(powershell -File run_tests.ps1)",
+      "Bash(gh pr:*)",
+      "Bash(git checkout:*)",
+      "Bash(gdlint -d)",
+      "Bash(gh api:*)",
+      "Bash(git add:*)"
     ]
   }
 }

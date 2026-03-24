@@ -3,6 +3,10 @@ extends WispState
 ## Hysteresis: only returns to Patrol when distance > aggro_range * 1.5.
 
 
+func enter() -> void:
+	AudioManager.play_sfx("enemy_alert", wisp.global_position)
+
+
 func physics_update(delta: float) -> void:
 	if not wisp.player:
 		wisp.state_machine.transition_to("patrol")

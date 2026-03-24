@@ -1,10 +1,22 @@
+Art style direction (decide before sourcing assets).
+  Kenney/cartoonish-cute vs dark-eldritch-serious — these need different asset sources.
+  "Cute dog in a dark world" (Undertale contrast) is valid but intentional.
+  Decision drives: character art, enemy art, UI skin, shader choices.
+
+Level design + terrain.
+  Currently both scenes are flat placeholder geometry. Needs real level design:
+  platforms, obstacles, verticality to make movement abilities (dash, double jump,
+  wall jump) feel purposeful. Blocked on: art direction, zone theme decisions.
+
 Create angel wings item. (extra jump or extra glidy?)
 Sword swing attack. (light, heavy, charge, spin?)
 Dash move. (ground, air)
 Dodge roll/invincibility frames.
 Wall jump/wall slide.
 Storyline
-Sounds
+Sounds (in progress this session — foundation being laid)
+  Deferred from audio session: footsteps (run state timer, surface detection),
+  orb vacuum proximity hum (looping AudioStreamPlayer3D per orb while in range).
 Animations
 Enemies
 Bug B — Stats resource is shared by reference, so health/stamina mutate the .tres file's in-memory object
@@ -16,9 +28,10 @@ Dark Souls-style stat investment system.
   Instead of automatic stat increases on level-up, award souls/points that the player spends at a hub NPC to invest in specific stats (strength, endurance, health, etc.).
   Current level-up auto-grants (+10 max HP, +5 max stamina, +2 regen) should be replaced or gated behind this system.
 
-XP orb gravity + player vacuum effect.
-  When an enemy dies, XP orbs should fall with gravity rather than spawning in place.
-  Eventually add a player vacuum: orbs within a radius accelerate toward the player automatically (like a magnet/loot vacuum).
+XP orb despawn without XP grant (design decision pending).
+  Current behavior: orbs auto-collect (grant XP silently) after orb_lifetime seconds.
+  Alternative: despawn without granting XP — creates tension to collect quickly but
+  may feel punishing. Revisit once more zone content exists to judge pacing.
 
 Death penalty — item/currency loss on death.
   Currently death preserves everything (XP, level, unlocks). Consider losing a portion

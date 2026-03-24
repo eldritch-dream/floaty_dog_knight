@@ -21,6 +21,7 @@ WorldManager="*res://scripts/systems/world_manager.gd"
 RespawnManager="*res://scripts/systems/respawn_manager.gd"
 SaveManager="*res://scripts/systems/save_manager.gd"
 DreamManager="*res://scripts/systems/dream_manager.gd"
+AudioManager="*res://scripts/systems/audio_manager.gd"
 
 [display]
 

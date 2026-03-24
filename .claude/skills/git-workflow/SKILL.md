@@ -8,9 +8,13 @@
 
 | Branch | Purpose |
 |---|---|
-| `main` | Protected. Stable, releasable builds only. |
+| `main` | Protected. Stable, releasable builds only. **Never merge directly — always via PR.** |
 | `dev` | Integration branch. All feature branches merge here first. |
 | `feature/*` | One branch per feature or fix. Branch from `dev`, PR back to `dev`. |
+
+> **Rule: `dev → main` is always a pull request, never a direct merge.**
+> The user reviews and merges `dev → main` PRs manually on GitHub. Claude must never run
+> `git merge` or `git push` targeting `main` — only open the PR and stop.
 
 Example branch names:
 - `feature/enemy-patrol-state`
@@ -78,6 +82,7 @@ Before opening a PR, confirm all of the following:
 - [ ] `SKILL.md` updated if the architecture changed (new state, new system, etc.)
 - [ ] Commit messages follow Conventional Commit format
 - [ ] Branch targets `dev` (not `main`) unless it is a CI/release workflow
+- [ ] To promote `dev → main`: run `gh pr create --base main --head dev`, then hand off to user for review and merge
 
 ---
 
@@ -98,8 +103,8 @@ Full end-to-end flow from feature branch to itch.io:
 
 1. **Develop** on `feature/*` branch, branched from `dev`
 2. **PR feature/* → dev** — CI runs GUT suite; must pass before merge
-3. **PR dev → main** — CI runs GUT suite again; must pass before merge
-4. **Push to main** triggers `export.yml` (single workflow, confirmed working):
+3. **PR dev → main** — open via `gh pr create`, then **stop**. The user reviews and merges manually on GitHub. CI runs GUT suite again before merge is allowed.
+4. **Push to main** (after user merges the PR) triggers `export.yml` (single workflow, confirmed working):
    - Builds Windows (`DoggoKnight.exe`, PCK embedded) and Web (`DoggoKnight-web.zip`)
    - Creates a GitHub Release with both artifacts and a version tag
    - Installs butler from `github.com/itchio/butler` releases (extracts to `linux-amd64/butler`)

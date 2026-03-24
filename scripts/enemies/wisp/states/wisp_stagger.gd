@@ -11,6 +11,7 @@ func enter() -> void:
 	if wisp.visual:
 		wisp.visual.scale = Vector3.ONE
 	_set_emission(Color(1.0, 1.0, 1.0))  # White = stunned
+	AudioManager.play_sfx("enemy_stagger", wisp.global_position)
 
 
 func exit() -> void:

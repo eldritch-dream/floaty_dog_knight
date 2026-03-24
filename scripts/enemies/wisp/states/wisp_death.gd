@@ -8,6 +8,7 @@ const XP_ORB_SCENE: PackedScene = preload("res://scenes/collectibles/xp_orb.tscn
 func enter() -> void:
 	# Freeze movement.
 	wisp.velocity = Vector3.ZERO
+	AudioManager.play_sfx("enemy_death", wisp.global_position)
 
 	# Disable HurtBox so the corpse can't be hit again.
 	if wisp.hurt_box:
@@ -33,6 +34,8 @@ func _spawn_xp_orb() -> void:
 	orb.config = config
 	wisp.get_parent().add_child(orb)
 	orb.global_position = wisp.global_position
+	if wisp.player:
+		orb.set_player(wisp.player as CharacterBody3D)
 
 
 func _disable_wisp() -> void:

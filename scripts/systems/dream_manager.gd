@@ -36,9 +36,11 @@ func enter_dream(bed: DogBed) -> void:
 	# Update respawn point so future deaths land at this bed.
 	_update_respawn_point(bed)
 
-	# Heal player to full.
+	# Heal player to full and restore stamina.
 	_player.stats.health = _player.stats.max_health
 	_player.stats.health_changed.emit(_player.stats.health, _player.stats.max_health)
+	_player.stats.stamina = _player.stats.max_stamina
+	_player.stats.stamina_changed.emit(_player.stats.stamina, _player.stats.max_stamina)
 
 	# Respawn enemies in the current scene (gated by config flag).
 	# Reset first, then freeze — reset() re-enables physics internally, so the
@@ -46,6 +48,8 @@ func enter_dream(bed: DogBed) -> void:
 	if _player.config and _player.config.enemy_respawn_on_rest:
 		get_tree().call_group("enemies", "reset")
 	get_tree().call_group("enemies", "set_physics_process", false)
+
+	AudioManager.play_sfx("dream_enter")
 
 	# Show the placeholder overlay.
 	# PLACEHOLDER: Session B replaces _show_overlay() with a call to
@@ -58,6 +62,7 @@ func enter_dream(bed: DogBed) -> void:
 ## Save happens here, after stat investments, not on entry.
 func exit_dream() -> void:
 	_hide_overlay()
+	AudioManager.play_sfx("dream_wake")
 	if _player:
 		# Save after investments are applied — entry save only wrote the respawn point.
 		var scene: Node = get_tree().current_scene
