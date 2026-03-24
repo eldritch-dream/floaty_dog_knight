@@ -12,6 +12,7 @@ func enter() -> void:
 	_i_frame_timer = config.i_frame_duration
 
 	player.is_invincible = true
+	AudioManager.play_sfx("dodge_roll")
 
 	# Spend stamina (already checked before transitioning here).
 	stats.spend_stamina(config.dodge_stamina_cost, config.stamina_regen_delay)

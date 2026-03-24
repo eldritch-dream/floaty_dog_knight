@@ -13,6 +13,7 @@ func enter() -> void:
 		player.velocity.y = config.jump_velocity
 	player.coyote_timer = 0.0
 	player.jump_buffered = false
+	AudioManager.play_sfx("player_jump")
 
 
 func physics_update(delta: float) -> void:

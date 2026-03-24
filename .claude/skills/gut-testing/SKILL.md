@@ -139,26 +139,25 @@ Exit code `0` = all tests pass. Any non-zero = failure.
 
 ## Manual Test Checklist Format
 
-When generating a manual test checklist for the user to execute in-game, use this format — it is easy to copy-paste into Notepad and track during play:
+When generating a manual test checklist, use markdown checkbox format — the user works in a markdown editor and sends results back with boxes checked/unchecked:
 
-```
+```markdown
 **Section Name**
-1.1 Brief description of what to verify
-1.2 Next check
-1.3 Another check
+- [ ] 1.1 Brief description of what to verify
+- [ ] 1.2 Next check
+- [ ] 1.3 Another check
 
 **Next Section**
-2.1 First check in section
-2.2 Second check
+- [ ] 2.1 First check in section
+- [ ] 2.2 Second check
 ```
 
 Rules:
-- Numbered denotations: `1.1`, `1.2`, `2.1`, etc. (section.item)
+- Numbered denotations: `1.1`, `1.2`, `2.1`, etc. (section.item) inside the checkbox line
 - Single line per check — no sub-bullets, no extra spacing within a section
 - Blank line between sections only
-- User marks results as `[P]` (pass) or `[X]` (fail) or `[ ]` (not yet tested)
-- No large horizontal spacing between items — keep it tight so it fits in a narrow notepad window
-- Do NOT use markdown checkbox syntax (`- [ ]`) — just the plain numbered format above
+- User checks boxes (`- [x]`) for pass, leaves unchecked for fail/skip, and sends back — Claude reads the result from the checkbox state
+- Keep descriptions concise so lines stay readable in the editor
 
 ---
 

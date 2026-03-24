@@ -57,6 +57,7 @@ func _ready() -> void:
 	if hurt_box:
 		hurt_box.owner_node = self
 		hurt_box.stats = stats
+		hurt_box.damaged.connect(_on_hurt)
 
 	# Pass config to systems.
 	if config:
@@ -101,6 +102,8 @@ func _ready() -> void:
 			global_position = spawn_node.global_position
 
 	# Register with SaveManager. On cold start this also applies any existing save.
+	if stats:
+		stats.leveled_up.connect(_on_leveled_up)
 	if stats and ability_unlocks:
 		SaveManager.register_player(stats, ability_unlocks)
 
@@ -153,6 +156,14 @@ func _physics_process(delta: float) -> void:
 
 	# State machine handles the rest (movement, gravity, state transitions).
 	# It calls physics_update on the current state automatically.
+
+
+func _on_hurt(_amount: float, _source: Node) -> void:
+	AudioManager.play_sfx("player_hurt")
+
+
+func _on_leveled_up(_new_level: int) -> void:
+	AudioManager.play_sfx("level_up")
 
 
 ## Called when PlayerStats.died fires. Transitions to the terminal Death state

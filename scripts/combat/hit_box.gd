@@ -64,3 +64,4 @@ func _try_deal_damage(hurt_box: HurtBox) -> void:
 	_hit_this_attack.append(hurt_box)
 	hurt_box.receive_hit(damage, source)
 	hit.emit(hurt_box)
+	AudioManager.play_sfx("hit_impact", hurt_box.global_position)

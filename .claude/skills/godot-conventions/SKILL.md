@@ -18,9 +18,13 @@ floaty_dog_knight/
 ├── addons/
 │   └── gut/                    ← GUT test framework (do not edit)
 ├── assets/
-│   ├── audio/                  ← empty, .gdkeep placeholder
+│   ├── audio/
+│   │   ├── sfx/                ← placeholder .wav files (one per SOUNDS dict entry)
+│   │   └── music/              ← music tracks (empty until music added)
 │   ├── models/                 ← empty, .gdkeep placeholder
 │   └── textures/               ← empty, .gdkeep placeholder
+├── tools/
+│   └── generate_placeholder_audio.gd  ← @tool EditorScript, run once to regenerate placeholders
 ├── resources/
 │   ├── config/
 │   │   └── default_config.tres ← GameConfig resource (the canonical tuning file)
@@ -111,6 +115,8 @@ floaty_dog_knight/
 | `WorldManager` | `scripts/systems/world_manager.gd` | Scene transitions via `travel_to(scene_path, spawn_point)` |
 | `RespawnManager` | `scripts/systems/respawn_manager.gd` | Death sequence: freeze → wait → heal → travel to hub |
 | `SaveManager` | `scripts/systems/save_manager.gd` | Persist/restore player state; web (localStorage) + desktop (FileAccess) |
+| `DreamManager` | `scripts/systems/dream_manager.gd` | Dog Bed enter/exit dream flow; sole entry point for dream state |
+| `AudioManager` | `scripts/systems/audio_manager.gd` | All audio playback; sole owner of audio file paths (see audio skill doc) |
 
 Config, stats, and unlocks are **not** autoloaded — they are distributed explicitly via `@export` on the Player node.
 
@@ -192,6 +198,14 @@ Player              (CharacterBody3D, collision_layer=4, collision_mask=1)
 `player._ready()` wires: `combo_system.weapon = PawWeapon`, `weapon.hit_box = PawWeapon/HitBox`, `hurt_box.owner_node = self`, `hurt_box.stats = stats`.
 
 Player `config`, `stats`, and `ability_unlocks` must all be assigned in the Inspector or via a parent scene. Currently assigned via `hub.tscn` and `zone_01.tscn`.
+
+---
+
+## Animation Rule
+
+> **Use `Tween` for simple one-shot procedural animations (scale pulses, flashes, position pops). Do not use `AnimationPlayer` until a full animation system is added.**
+
+`AnimationPlayer` requires named animations, clip management, and a node reference — overkill for a single-use effect. `create_tween()` is fire-and-forget and self-cleans.
 
 ---
 

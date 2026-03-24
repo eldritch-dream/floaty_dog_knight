@@ -12,6 +12,7 @@ extends PlayerState
 func enter() -> void:
 	# Halt all momentum immediately.
 	player.velocity = Vector3.ZERO
+	AudioManager.play_sfx("player_death")
 	# Notify UI and future animation system. RespawnManager listens here too.
 	# TODO: trigger death animation before emitting when animations are implemented.
 	player.player_died.emit()
