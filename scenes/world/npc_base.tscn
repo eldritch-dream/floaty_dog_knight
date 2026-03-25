@@ -1,0 +1,41 @@
+[gd_scene load_steps=6 format=3 uid="uid://npc_base_scene"]
+
+[ext_resource type="Script" path="res://scripts/npc/npc_base.gd" id="1"]
+
+[sub_resource type="CapsuleMesh" id="NpcMesh"]
+radius = 0.35
+height = 1.4
+
+[sub_resource type="StandardMaterial3D" id="NpcMat"]
+albedo_color = Color(0.784, 0.592, 0.353, 1)
+
+[sub_resource type="SphereShape3D" id="InteractShape"]
+radius = 2.5
+
+[node name="NpcBase" type="Node3D"]
+script = ExtResource("1")
+
+[node name="Visual" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
+mesh = SubResource("NpcMesh")
+surface_material_override/0 = SubResource("NpcMat")
+
+[node name="InteractZone" type="Area3D" parent="."]
+collision_layer = 0
+collision_mask = 4
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="InteractZone"]
+shape = SubResource("InteractShape")
+
+[node name="InteractPrompt" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
+visible = false
+billboard = 1
+font_size = 48
+text = "[ E ] Talk"
+modulate = Color(1, 1, 0.85, 1)
+outline_size = 8
+outline_modulate = Color(0, 0, 0, 1)
+
+[node name="DialogueAnchor" type="Node" parent="."]
+# SEAM: future portrait/voice line system — connect to this node, not to NpcBase directly.

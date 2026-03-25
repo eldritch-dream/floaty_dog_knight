@@ -31,9 +31,13 @@ func travel_to(scene_path: String, spawn_point: String = "") -> void:
 
 func _do_travel(scene_path: String) -> void:
 	get_tree().change_scene_to_file(scene_path)
-	# Mark as done. The new scene's _ready() calls on_scene_ready() if needed.
 	_travelling = false
 	travel_completed.emit(scene_path)
+	# Fire world events for this scene arrival.
+	var scene_name: String = scene_path.get_file().get_basename()
+	DialogueManager.fire_event(scene_name + "_entered")
+	if not DialogueManager.has_fired(scene_name + "_entered_first"):
+		DialogueManager.fire_event(scene_name + "_entered_first")
 
 
 ## Called by new scene's player after _ready() to retrieve the spawn point name.

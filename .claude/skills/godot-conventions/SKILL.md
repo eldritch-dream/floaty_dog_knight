@@ -21,6 +21,9 @@ floaty_dog_knight/
 │   ├── audio/
 │   │   ├── sfx/                ← placeholder .wav files (one per SOUNDS dict entry)
 │   │   └── music/              ← music tracks (empty until music added)
+│   ├── dialogue/               ← one JSON per NPC: {npc_id}.json (see narrative skill)
+│   │   ├── owner.json          ← Owner NPC lines (4 states + conditional overlay)
+│   │   └── test_npc.json       ← GUT test fixture only — not used in production
 │   ├── models/                 ← empty, .gdkeep placeholder
 │   └── textures/               ← empty, .gdkeep placeholder
 ├── tools/
@@ -38,9 +41,12 @@ floaty_dog_knight/
 │   ├── collectibles/           ← XPOrb.tscn goes here
 │   ├── player/
 │   │   └── player.tscn         ← CharacterBody3D player scene
-│   ├── ui/                     ← empty, .gdkeep placeholder
+│   ├── ui/
+│   │   ├── dialogue_box.tscn   ← autoload scene; CanvasLayer with Panel, SpeakerLabel, LineLabel
+│   │   └── stat_allocation_screen.tscn
 │   └── world/
-│       ├── hub.tscn            ← home base / owner NPC / portal to zone_01
+│       ├── hub.tscn            ← home base / OwnerNpc (npc_base.tscn, npc_id="owner") / portal
+│       ├── npc_base.tscn       ← reusable NPC prefab; set npc_id to match dialogue JSON
 │       ├── zone_01.tscn        ← first zone (placeholder)
 │       └── test_room.tscn      ← movement sandbox (main scene during dev)
 ├── scripts/
@@ -53,7 +59,7 @@ floaty_dog_knight/
 │   │   ├── sword.gd            ← extends WeaponBase; HitBox child = "HitBox"
 │   │   └── weapon_base.gd      ← abstract base; attack_light/heavy/deactivate_hitbox
 │   ├── npc/
-│   │   └── npc_base.gd         ← base NPC class; interact() virtual
+│   │   └── npc_base.gd         ← NPC interaction + prompt; reads npc_id JSON via DialogueManager
 │   ├── player/
 │   │   ├── camera_rig.gd
 │   │   ├── player.gd
@@ -71,13 +77,19 @@ floaty_dog_knight/
 │   │       └── run.gd
 │   ├── systems/
 │   │   ├── ability_unlocks.gd  ← @export bools for each ability
+│   │   ├── audio_manager.gd    ← autoload: all SFX/music playback
 │   │   ├── combo_system.gd     ← manages hitbox active-frame windows
+│   │   ├── dialogue_manager.gd ← autoload: event tracking, NPC state, line filtering
+│   │   ├── dream_manager.gd    ← autoload: Dog Bed enter/exit dream flow
 │   │   ├── game_config.gd
 │   │   ├── player_stats.gd     ← health, stamina, XP/leveling + signals
 │   │   ├── respawn_manager.gd  ← autoload: freeze→wait→heal→travel on death
 │   │   ├── save_data.gd        ← RefCounted snapshot: capture/apply/to_dict/from_dict
 │   │   ├── save_manager.gd     ← autoload: save/load/delete; web + desktop storage
+│   │   ├── world_events.gd     ← class_name WorldEvents; string constants for all events
 │   │   └── world_manager.gd    ← autoload: travel_to(scene, spawn_point)
+│   ├── ui/
+│   │   └── dialogue_box.gd     ← autoload (via tscn): show_dialogue/close/is_open/advance_line
 │   └── world/
 │       └── portal.gd           ← Area3D trigger → WorldManager.travel_to()
 ├── SKILLS.md
@@ -117,6 +129,8 @@ floaty_dog_knight/
 | `SaveManager` | `scripts/systems/save_manager.gd` | Persist/restore player state; web (localStorage) + desktop (FileAccess) |
 | `DreamManager` | `scripts/systems/dream_manager.gd` | Dog Bed enter/exit dream flow; sole entry point for dream state |
 | `AudioManager` | `scripts/systems/audio_manager.gd` | All audio playback; sole owner of audio file paths (see audio skill doc) |
+| `DialogueManager` | `scripts/systems/dialogue_manager.gd` | NPC state machine, event tracking, one-shot line filtering; see narrative skill |
+| `DialogueBox` | `scenes/ui/dialogue_box.tscn` | Displays dialogue lines one at a time; show_dialogue/close/is_open/advance_line |
 
 Config, stats, and unlocks are **not** autoloaded — they are distributed explicitly via `@export` on the Player node.
 

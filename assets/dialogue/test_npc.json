@@ -1,0 +1,26 @@
+{
+  "initial_state": "start",
+  "states": {
+    "start": {
+      "lines": [
+        "Hello.",
+        { "text": "Welcome!", "one_shot": true }
+      ],
+      "transitions": [
+        { "event": "test_event", "next_state": "after" }
+      ]
+    },
+    "after": {
+      "lines": [
+        "Goodbye."
+      ],
+      "transitions": []
+    },
+    "veteran": {
+      "condition": { "player_level_gte": 5 },
+      "lines": [
+        "Veteran line."
+      ]
+    }
+  }
+}

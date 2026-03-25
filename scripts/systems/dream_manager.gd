@@ -49,6 +49,7 @@ func enter_dream(bed: DogBed) -> void:
 		get_tree().call_group("enemies", "reset")
 	get_tree().call_group("enemies", "set_physics_process", false)
 
+	DialogueManager.fire_event(WorldEvents.RESTED_AT_BED)
 	AudioManager.play_sfx("dream_enter")
 
 	# Show the placeholder overlay.

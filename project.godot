@@ -22,6 +22,8 @@ RespawnManager="*res://scripts/systems/respawn_manager.gd"
 SaveManager="*res://scripts/systems/save_manager.gd"
 DreamManager="*res://scripts/systems/dream_manager.gd"
 AudioManager="*res://scripts/systems/audio_manager.gd"
+DialogueManager="*res://scripts/systems/dialogue_manager.gd"
+DialogueBox="*res://scenes/ui/dialogue_box.tscn"
 
 [display]
 
