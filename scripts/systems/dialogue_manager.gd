@@ -25,6 +25,7 @@ var _npc_cache: Dictionary = {}
 
 func _ready() -> void:
 	_load_from_save()
+	DialogueBox.dialogue_finished.connect(_on_dialogue_finished)
 
 
 ## Restore in-memory state from the current save file.
@@ -184,6 +185,15 @@ func _save() -> void:
 	data.fired_events = _fired_events.duplicate()
 	data.one_shot_lines_seen = _one_shots_seen.duplicate()
 	SaveManager._write(JSON.stringify(data.to_dict()))
+
+
+## Called when the player finishes a conversation with an NPC.
+## Fires "{npc_id}_talked_{state}" so JSON transitions can require the player
+## to have actually seen dialogue in a specific state before advancing.
+func _on_dialogue_finished(npc_id: String) -> void:
+	var state: String = get_npc_state(npc_id)
+	if not state.is_empty():
+		fire_event(npc_id + "_talked_" + state)
 
 
 ## Test helper — resets all in-memory state without touching the save file.

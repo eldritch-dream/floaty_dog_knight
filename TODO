@@ -4,14 +4,6 @@ NPC visual quest state indicator.
   talked to them. Prevents players missing state transitions. Design TBD (icon above
   head vs. full stance animation). Blocked on art direction decision.
 
-Wanderer state reachability design.
-  The wanderer state requires the player to return to the hub without killing a wisp.
-  In practice most players immediately fight in zone_01, so they arrive at hub already
-  in witness state, skipping wanderer entirely. Consider: (a) gating the portal until
-  after the player has talked to the owner, (b) adding a wanderer-equivalent reaction
-  on the player's first return regardless of wisp kill order, or (c) accepting the skip
-  as emergent player agency. Design decision needed before adding more NPCs.
-
 Art style direction (decide before sourcing assets).
   Kenney/cartoonish-cute vs dark-eldritch-serious — these need different asset sources.
   "Cute dog in a dark world" (Undertale contrast) is valid but intentional.

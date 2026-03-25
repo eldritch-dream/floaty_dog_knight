@@ -116,6 +116,31 @@ func test_conditional_state_shown_at_or_above_level_threshold() -> void:
 	assert_true(lines.has("Veteran line."), "conditional state must show at threshold")
 
 
+# ── talked-state event ───────────────────────────────────────────────────
+
+func test_finishing_dialogue_fires_talked_state_event() -> void:
+	SaveManager._unlocks = AbilityUnlocks.new()
+	SaveManager.save_game("")
+	DialogueManager.get_current_lines(TEST_NPC)  # prime cache; state = "start"
+	var lines: Array[String] = ["Hello."]
+	DialogueBox.show_dialogue(TEST_NPC, lines, null)
+	DialogueBox.close()
+	assert_true(DialogueManager.has_fired("test_npc_talked_start"),
+		"closing dialogue must fire {npc_id}_talked_{state} event")
+
+
+func test_talked_event_reflects_current_state() -> void:
+	SaveManager._unlocks = AbilityUnlocks.new()
+	SaveManager.save_game("")
+	DialogueManager.get_current_lines(TEST_NPC)  # prime cache
+	DialogueManager.fire_event("test_event")      # transitions to "after"
+	var lines: Array[String] = ["Goodbye."]
+	DialogueBox.show_dialogue(TEST_NPC, lines, null)
+	DialogueBox.close()
+	assert_true(DialogueManager.has_fired("test_npc_talked_after"),
+		"talked event must use the state at time of closing, not the initial state")
+
+
 # ── save persistence round-trip ───────────────────────────────────────────
 
 func test_fired_event_survives_session_reload() -> void:

@@ -17,7 +17,8 @@
         { "text": "I thought he was just dreaming.", "one_shot": true }
       ],
       "transitions": [
-        { "event": "zone_01_entered_first", "next_state": "wanderer" }
+        { "event": "zone_01_entered_first", "next_state": "wanderer" },
+        { "event": "wisp_killed_first", "next_state": "wanderer" }
       ]
     },
     "wanderer": {
@@ -27,7 +28,7 @@
         { "text": "But you came back. That's something.", "one_shot": true }
       ],
       "transitions": [
-        { "event": "wisp_killed_first", "next_state": "witness" }
+        { "event": "owner_talked_wanderer", "next_state": "witness" }
       ]
     },
     "witness": {
