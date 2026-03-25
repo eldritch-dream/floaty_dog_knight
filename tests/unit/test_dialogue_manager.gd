@@ -5,6 +5,7 @@ extends GutTest
 ## The test NPC lives at assets/dialogue/test_npc.json.
 
 const TEST_NPC: String = "test_npc"
+const TEMP_SAVE: String = "user://test_dm_tmp.json"
 
 var _stats: PlayerStats
 
@@ -14,11 +15,15 @@ func before_each() -> void:
 	_stats = PlayerStats.new()
 	_stats.level = 1
 	SaveManager._stats = _stats
+	SaveManager.save_path = TEMP_SAVE
 
 
 func after_each() -> void:
 	DialogueManager._reset_for_test()
 	SaveManager._stats = null
+	SaveManager.save_path = "user://save.json"
+	if FileAccess.file_exists(TEMP_SAVE):
+		DirAccess.remove_absolute(TEMP_SAVE)
 
 
 # ── has_fired / fire_event ─────────────────────────────────────────────────
@@ -109,3 +114,38 @@ func test_conditional_state_shown_at_or_above_level_threshold() -> void:
 	_stats.level = 5  # meets player_level_gte: 5
 	var lines: Array[String] = DialogueManager.get_current_lines(TEST_NPC)
 	assert_true(lines.has("Veteran line."), "conditional state must show at threshold")
+
+
+# ── save persistence round-trip ───────────────────────────────────────────
+
+func test_fired_event_survives_session_reload() -> void:
+	SaveManager._unlocks = AbilityUnlocks.new()
+	SaveManager.save_game("")  # create a base save
+	DialogueManager.fire_event("test_event")  # _save() writes to temp file
+	DialogueManager._reset_for_test()
+	DialogueManager._load_from_save()
+	assert_true(DialogueManager.has_fired("test_event"),
+		"fired event must still be recorded after reset + reload")
+
+
+func test_npc_state_survives_session_reload() -> void:
+	SaveManager._unlocks = AbilityUnlocks.new()
+	SaveManager.save_game("")
+	DialogueManager.get_current_lines(TEST_NPC)  # prime cache
+	DialogueManager.fire_event("test_event")     # transitions to "after"
+	assert_eq(DialogueManager.get_npc_state(TEST_NPC), "after")
+	DialogueManager._reset_for_test()
+	DialogueManager._load_from_save()
+	assert_eq(DialogueManager.get_npc_state(TEST_NPC), "after",
+		"npc state must be restored to 'after' after reset + reload")
+
+
+func test_one_shot_seen_survives_session_reload() -> void:
+	SaveManager._unlocks = AbilityUnlocks.new()
+	SaveManager.save_game("")
+	DialogueManager.get_current_lines(TEST_NPC)  # marks one-shot as seen, calls _save()
+	DialogueManager._reset_for_test()
+	DialogueManager._load_from_save()
+	var lines: Array[String] = DialogueManager.get_current_lines(TEST_NPC)
+	assert_false(lines.has("Welcome!"),
+		"one-shot must remain consumed after reset + reload")

@@ -24,6 +24,12 @@ var _npc_cache: Dictionary = {}
 
 
 func _ready() -> void:
+	_load_from_save()
+
+
+## Restore in-memory state from the current save file.
+## Also callable from tests after _reset_for_test() to simulate a session reload.
+func _load_from_save() -> void:
 	var data: SaveData = SaveManager.load_game()
 	if data:
 		_npc_states = data.npc_states.duplicate()
