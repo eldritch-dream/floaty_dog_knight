@@ -24,10 +24,11 @@ var _player: Node = null
 @onready var _prompt_label: Label = $Panel/PromptLabel
 
 
-func _process(_delta: float) -> void:
+func _input(event: InputEvent) -> void:
 	if not _is_open:
 		return
-	if Input.is_action_just_pressed("ui_interact"):
+	if event.is_action_pressed("ui_interact"):
+		get_viewport().set_input_as_handled()
 		advance_line()
 
 

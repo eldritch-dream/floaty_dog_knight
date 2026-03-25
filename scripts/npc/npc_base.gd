@@ -26,16 +26,17 @@ func _ready() -> void:
 	col.shape = sphere
 
 
-func _process(_delta: float) -> void:
+func _unhandled_input(event: InputEvent) -> void:
 	if not _in_range:
 		return
-	if not Input.is_action_just_pressed(interact_action):
+	if not event.is_action_pressed(interact_action):
 		return
 	if DialogueBox.is_open():
 		return
 	var lines: Array[String] = DialogueManager.get_current_lines(npc_id)
 	if lines.is_empty():
 		return
+	get_viewport().set_input_as_handled()
 	DialogueBox.show_dialogue(npc_id, lines, _player)
 
 
