@@ -70,6 +70,8 @@ func get_current_lines(npc_id: String) -> Array[String]:
 	_load_npc_data(npc_id)
 	if not _npc_cache.has(npc_id):
 		return []
+	if _catch_up_npc_state(npc_id):
+		_save()
 	var npc_data: Dictionary = _npc_cache[npc_id]
 	var states: Dictionary = npc_data.get("states", {})
 	# Conditional overlay states take priority — checked fresh each call.
@@ -116,6 +118,23 @@ func _load_npc_data(npc_id: String) -> void:
 		print("DialogueManager: invalid JSON in '%s'" % path)
 		return
 	_npc_cache[npc_id] = parsed as Dictionary
+
+
+## Replay all already-fired events against an NPC until no more transitions fire.
+## Handles out-of-order events: e.g. zone_01_entered_first fired while NPC was
+## in default, then rested_at_bed advanced NPC to dreamer — catch-up immediately
+## applies zone_01_entered_first to advance dreamer→wanderer.
+## Returns true if any state change occurred (caller should _save()).
+func _catch_up_npc_state(npc_id: String) -> bool:
+	var any_changed: bool = false
+	var changed: bool = true
+	while changed:
+		changed = false
+		for event in _fired_events:
+			if _evaluate_transitions(npc_id, event):
+				changed = true
+				any_changed = true
+	return any_changed
 
 
 ## Check if the current state has a transition matching event_name and advance if so.
