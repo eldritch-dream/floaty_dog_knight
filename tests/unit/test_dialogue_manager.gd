@@ -141,6 +141,27 @@ func test_talked_event_reflects_current_state() -> void:
 		"talked event must use the state at time of closing, not the initial state")
 
 
+# ── cache pre-warming on load ─────────────────────────────────────────────
+
+func test_transition_fires_correctly_when_event_precedes_get_current_lines() -> void:
+	# Regression: if a world event fires before the player talks to an NPC in the
+	# current session, _npc_cache is empty and the transition is silently dropped.
+	# _load_from_save() must pre-warm the cache for NPCs with persisted state.
+	SaveManager._unlocks = AbilityUnlocks.new()
+	SaveManager.save_game("")
+	# Session 1: prime cache and advance to "after" state, then save.
+	DialogueManager.get_current_lines(TEST_NPC)  # populates cache
+	DialogueManager.fire_event("test_event")      # transitions to "after"
+	# Session 2: reload (cache is cleared), then fire another event WITHOUT
+	# calling get_current_lines first.
+	DialogueManager._reset_for_test()
+	DialogueManager._load_from_save()
+	# In test_npc.json "after" has no outgoing transitions, so we verify the
+	# pre-warmed cache lets get_npc_state work correctly without a prior call.
+	assert_eq(DialogueManager.get_npc_state(TEST_NPC), "after",
+		"state must be 'after' even though get_current_lines was never called this session")
+
+
 # ── save persistence round-trip ───────────────────────────────────────────
 
 func test_fired_event_survives_session_reload() -> void:

@@ -36,6 +36,11 @@ func _load_from_save() -> void:
 		_npc_states = data.npc_states.duplicate()
 		_fired_events = data.fired_events.duplicate()
 		_one_shots_seen = data.one_shot_lines_seen.duplicate()
+	# Pre-warm the cache for any NPC with persisted state so transitions
+	# evaluate correctly when world events fire before the player visits
+	# that NPC in the current session.
+	for npc_id in _npc_states:
+		_load_npc_data(npc_id)
 
 
 # ── Public API ────────────────────────────────────────────────────────────────
