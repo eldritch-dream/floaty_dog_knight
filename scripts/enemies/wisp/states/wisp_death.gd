@@ -9,6 +9,10 @@ func enter() -> void:
 	# Freeze movement.
 	wisp.velocity = Vector3.ZERO
 	AudioManager.play_sfx("enemy_death", wisp.global_position)
+	# Fire world events for quest tracking.
+	DialogueManager.fire_event(WorldEvents.WISP_KILLED)
+	if not DialogueManager.has_fired(WorldEvents.WISP_KILLED_FIRST):
+		DialogueManager.fire_event(WorldEvents.WISP_KILLED_FIRST)
 
 	# Disable HurtBox so the corpse can't be hit again.
 	if wisp.hurt_box:

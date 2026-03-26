@@ -46,7 +46,10 @@ func _ready() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not _player_in_range:
 		return
+	if DialogueBox.is_open():
+		return
 	if event.is_action_pressed(config.dream_enter_key if config else "ui_interact"):
+		get_viewport().set_input_as_handled()
 		DreamManager.enter_dream(self)
 
 

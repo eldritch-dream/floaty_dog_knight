@@ -27,6 +27,8 @@ func enter_dream(bed: DogBed) -> void:
 	if not _player:
 		push_warning("DreamManager: enter_dream called before register_player.")
 		return
+	if DialogueBox.is_open():
+		return
 
 	# Disable all player input and physics.
 	_player.is_in_dream = true
@@ -49,6 +51,7 @@ func enter_dream(bed: DogBed) -> void:
 		get_tree().call_group("enemies", "reset")
 	get_tree().call_group("enemies", "set_physics_process", false)
 
+	DialogueManager.fire_event(WorldEvents.RESTED_AT_BED)
 	AudioManager.play_sfx("dream_enter")
 
 	# Show the placeholder overlay.

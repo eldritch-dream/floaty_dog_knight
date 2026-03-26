@@ -1,0 +1,53 @@
+{
+  "initial_state": "default",
+  "states": {
+    "default": {
+      "lines": [
+        "Oh — you startled me. I keep coming back here. Have you seen a dog? Small, golden. He likes to chase things.",
+        "I left water and food by the door. He'll come back. He always comes back."
+      ],
+      "transitions": [
+        { "event": "rested_at_bed", "next_state": "dreamer" }
+      ]
+    },
+    "dreamer": {
+      "lines": [
+        "You slept here, didn't you. In that bed.",
+        "That's where I found Biscuit, before he disappeared. Curled up, breathing slow, eyes moving under his lids.",
+        { "text": "I thought he was just dreaming.", "one_shot": true }
+      ],
+      "transitions": [
+        { "event": "zone_01_entered_first", "next_state": "wanderer" },
+        { "event": "wisp_killed_first", "next_state": "wanderer" }
+      ]
+    },
+    "wanderer": {
+      "lines": [
+        "You went through there. Past the light.",
+        "I tried once. I made it three steps before I turned around. Something in the air felt wrong. Like I wasn't supposed to be there.",
+        { "text": "But you came back. That's something.", "one_shot": true }
+      ],
+      "transitions": [
+        { "event": "owner_talked_wanderer", "next_state": "witness" }
+      ]
+    },
+    "witness": {
+      "lines": [
+        "I felt it. Whatever you did out there.",
+        "It got quieter. Like something that had been humming for weeks just... stopped.",
+        "Biscuit used to bark at nothing. The corner of the bedroom, every night for months.",
+        "He stopped about six months ago.",
+        { "text": "I didn't connect it until just now.", "one_shot": true }
+      ],
+      "transitions": []
+    },
+    "returning_veteran": {
+      "condition": { "player_level_gte": 3 },
+      "lines": [
+        "You've been out there for a while now, haven't you.",
+        "Your eyes look different. Like you've seen things settle into place that shouldn't be able to settle.",
+        "Biscuit had eyes like that sometimes. After a long sleep."
+      ]
+    }
+  }
+}

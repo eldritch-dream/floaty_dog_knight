@@ -293,6 +293,54 @@ func test_backward_compat_load_without_bed_fields() -> void:
 	assert_eq(data.unspent_stat_points, 0)
 
 
+func test_save_game_preserves_dialogue_fields_across_subsequent_saves() -> void:
+	# Simulate the DialogueManager flow: _save() writes dialogue fields via _write(),
+	# then save_game() runs. save_game() must NOT wipe those fields.
+	_save_manager._stats = _stats
+	_save_manager._unlocks = _unlocks
+	# Step 1 — write dialogue fields directly (as DialogueManager._save() does).
+	var dm_data: SaveData = SaveData.new()
+	dm_data.fired_events = ["hub_entered_first", "rested_at_bed"]
+	dm_data.npc_states = {"owner": "dreamer"}
+	dm_data.one_shot_lines_seen = ["owner_dreamer_2"]
+	_save_manager._write(JSON.stringify(dm_data.to_dict()))
+	# Step 2 — a subsequent save_game() call must preserve those fields.
+	_save_manager.save_game("res://scenes/world/hub.tscn")
+	var result: SaveData = _save_manager.load_game()
+	assert_not_null(result)
+	assert_true(result.fired_events.has("rested_at_bed"))
+	assert_eq(result.npc_states.get("owner", ""), "dreamer")
+	assert_true(result.one_shot_lines_seen.has("owner_dreamer_2"))
+
+
+func test_dialogue_fields_default_to_empty_on_new_save() -> void:
+	_save_manager._stats = _stats
+	_save_manager._unlocks = _unlocks
+	_save_manager.save_game("res://scenes/world/hub.tscn")
+	var result: SaveData = _save_manager.load_game()
+	assert_eq(result.fired_events, [])
+	assert_eq(result.npc_states, {})
+	assert_eq(result.one_shot_lines_seen, [])
+
+
+func test_backward_compat_load_without_dialogue_fields() -> void:
+	# Simulate a save written before dialogue fields existed.
+	var old_dict: Dictionary = {
+		"player_level": 2,
+		"player_xp": 50,
+		"player_max_health": 110.0,
+		"player_max_stamina": 105.0,
+		"stamina_regen_rate": 20.0,
+		"ability_unlocks": {},
+		"last_scene": "res://scenes/world/hub.tscn",
+	}
+	var data: SaveData = SaveData.new()
+	data.from_dict(old_dict)
+	assert_eq(data.fired_events, [])
+	assert_eq(data.npc_states, {})
+	assert_eq(data.one_shot_lines_seen, [])
+
+
 func test_bad_bed_scene_path_is_cleared_on_load() -> void:
 	# Simulate a save written by the old bug where bed_scene_path stored the
 	# DogBed subscene path instead of the world scene path.

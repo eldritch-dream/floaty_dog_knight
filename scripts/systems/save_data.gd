@@ -21,6 +21,15 @@ var last_bed_id: String = ""
 var last_bed_scene: String = ""
 ## Stat points earned from leveling up but not yet spent at a Dog Bed.
 var unspent_stat_points: int = 0
+## Current dialogue state per NPC. Keys are npc_id strings; values are state names.
+## Managed exclusively by DialogueManager — never written by SaveManager.capture().
+var npc_states: Dictionary = {}
+## Append-only log of every world event that has ever fired this save.
+## Managed exclusively by DialogueManager.
+var fired_events: Array = []
+## One-shot dialogue lines already seen. Key format: "{npc_id}_{state}_{line_index}".
+## Managed exclusively by DialogueManager.
+var one_shot_lines_seen: Array = []
 
 
 ## Populate this snapshot from live PlayerStats and AbilityUnlocks.
@@ -73,6 +82,9 @@ func to_dict() -> Dictionary:
 		"last_scene": last_scene,
 		"last_bed_id": last_bed_id,
 		"last_bed_scene": last_bed_scene,
+		"npc_states": npc_states,
+		"fired_events": fired_events,
+		"one_shot_lines_seen": one_shot_lines_seen,
 	}
 
 
@@ -90,3 +102,7 @@ func from_dict(data: Dictionary) -> void:
 	# Guard: an earlier bug stored the dog_bed subscene path instead of the world scene.
 	# Treat that as unset so cold-start falls back to hub rather than loading a sceneless file.
 	last_bed_scene = "" if raw_bed_scene.ends_with("dog_bed.tscn") else raw_bed_scene
+	# Dialogue fields — empty defaults ensure backward compat with pre-dialogue saves.
+	npc_states = data.get("npc_states", {})
+	fired_events = data.get("fired_events", [])
+	one_shot_lines_seen = data.get("one_shot_lines_seen", [])

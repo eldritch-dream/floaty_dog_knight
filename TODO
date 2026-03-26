@@ -1,3 +1,9 @@
+NPC visual quest state indicator.
+  Show a visual cue on the NPC (floating icon, stance change, colour shift) when new
+  dialogue is available — i.e. when the NPC's state has advanced since the player last
+  talked to them. Prevents players missing state transitions. Design TBD (icon above
+  head vs. full stance animation). Blocked on art direction decision.
+
 Art style direction (decide before sourcing assets).
   Kenney/cartoonish-cute vs dark-eldritch-serious — these need different asset sources.
   "Cute dog in a dark world" (Undertale contrast) is valid but intentional.

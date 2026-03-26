@@ -29,9 +29,13 @@ const SOUNDS: Dictionary = {
 	# Progression
 	"level_up":      "res://assets/audio/sfx/level_up.wav",
 	# World / UI
-	"dream_enter":   "res://assets/audio/sfx/dream_enter.wav",
-	"dream_wake":    "res://assets/audio/sfx/dream_wake.wav",
-	"portal_travel": "res://assets/audio/sfx/portal_travel.wav",
+	"dream_enter":      "res://assets/audio/sfx/dream_enter.wav",
+	"dream_wake":       "res://assets/audio/sfx/dream_wake.wav",
+	"portal_travel":    "res://assets/audio/sfx/portal_travel.wav",
+	# Dialogue
+	"dialogue_open":    "res://assets/audio/sfx/dialogue_open.wav",
+	"dialogue_advance": "res://assets/audio/sfx/dialogue_advance.wav",
+	"dialogue_close":   "res://assets/audio/sfx/dialogue_close.wav",
 }
 
 ## Max audible distance for 3D sources. Mirrors GameConfig.audio_3d_max_distance
